@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Keuangan - Revolusi Studio</title>
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --ios-blue: #007AFF;
+            --ios-green: #34C759;
+            --ios-red: #FF3B30;
+            --text-main: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-image: url('https://images.unsplash.com/photo-1614851099511-773084f6911d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1100px; margin: auto; }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { margin: 0 0 5px 0; font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+        .header p { margin: 0; opacity: 0.8; font-size: 14px; }
+
+        .btn-export {
+            background: var(--ios-green);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(52, 199, 89, 0.3);
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .btn-export:hover { transform: translateY(-2px); }
+        .btn-export:active { transform: scale(0.95); }
+
+        /* Grid Ringkasan (6 Kotak) */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px 15px;
+            text-align: center;
+        }
+
+        .stat-box h3 { margin: 0; font-size: 12px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-box p { margin: 10px 0 0; font-size: 22px; font-weight: 800; }
+
+        /* Area Grafik */
+        .chart-container { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
+        .chart-box { flex: 1; min-width: 300px; }
+        .chart-box h3 { margin-top: 0; font-size: 16px; opacity: 0.9; }
+
+        /* Tabel Liquid */
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { 
+            background: rgba(255, 255, 255, 0.1); 
+            padding: 15px; 
+            font-size: 13px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
+        td { 
+            padding: 15px; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+            font-size: 14px; 
+        }
+        tr:last-child td { border-bottom: none; }
+        
+        .badge { padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; }
+        .cash { background: rgba(0, 122, 255, 0.2); color: #80c1ff; }
+        .qris { background: rgba(52, 199, 89, 0.2); color: #85e09b; }
+
+        /* Custom warna untuk Laba/Rugi agar menonjol di kaca */
+        .profit-positive { color: #85e09b !important; text-shadow: 0 0 10px rgba(52, 199, 89, 0.4); }
+        .profit-negative { color: #ff8a80 !important; text-shadow: 0 0 10px rgba(255, 59, 48, 0.4); }
+
+        /* Pengunci tinggi grafik agar tidak infinite scroll */
+        .canvas-wrapper {
+            position: relative;
+            height: 300px; /* Anda bisa ubah angkanya kalau kurang tinggi */
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="text-align: right;">
+        <button onclick="eksporKeCSV()" class="btn-export">
+            📥 Unduh Excel / CSV
+        </button>
+    </div>
+
+    <div class="glass-card header">
+        <h1>Financial Report Insight</h1>
+        <p id="tgl-sekarang">Memuat data...</p>
+    </div>
+
+    <div class="summary-grid">
+        <div class="stat-box">
+            <h3>Total Omzet</h3>
+            <p id="total-omzet">Rp 0</p>
+        </div>
+        <div class="stat-box">
+            <h3>Studio 1 (Vintage)</h3>
+            <p id="omzet-s1">Rp 0</p>
+        </div>
+        <div class="stat-box">
+            <h3>Studio 2 (Blue)</h3>
+            <p id="omzet-s2">Rp 0</p>
+        </div>
+        <div class="stat-box">
+            <h3>Total Orang (PPL)</h3>
+            <p id="total-ppl">0</p>
+        </div>
+        <div class="stat-box" style="background: rgba(255, 59, 48, 0.1);">
+            <h3>Pengeluaran</h3>
+            <p id="total-pengeluaran" style="color: #ff8a80;">Rp 0</p>
+        </div>
+        <div class="stat-box" style="background: rgba(52, 199, 89, 0.1);">
+            <h3>Laba Bersih</h3>
+            <p id="laba-bersih" class="profit-positive">Rp 0</p>
+        </div>
+    </div>
+
+
+    <div class="chart-container">
+        <div class="glass-card chart-box" style="flex: 2;">
+            <h3>Tren Omzet Harian</h3>
+            <div class="canvas-wrapper">
+                <canvas id="chartBatang"></canvas>
+            </div>
+        </div>
+        <div class="glass-card chart-box" style="flex: 1;">
+            <h3>Popularitas Studio</h3>
+            <div class="canvas-wrapper">
+                <canvas id="chartLingkaran"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <h3 style="margin-top: 0; font-size: 16px; opacity: 0.9;">Rincian Transaksi</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Nama</th>
+                        <th>Studio</th>
+                        <th>Metode</th>
+                        <th>Total Harga</th>
+                    </tr>
+                </thead>
+                <tbody id="table-laporan">
+                    <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const urlScript = "https://script.google.com/macros/s/AKfycbxAqG0ElSvVC0a2w4htnU3RGZzVYub-xbmR_It9b11wU5udxCWErKKJ2OMonBdOilMPdw/exec"; 
+    let chartBatang, chartLingkaran;
+
+    // Setingan Global Chart.js agar cocok dengan tema gelap transparan
+    Chart.defaults.color = 'rgba(255, 255, 255, 0.8)';
+    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+    async function muatLaporan() {
+        try {
+            const res = await fetch(urlScript);
+            const resJson = await res.json(); 
+            
+            const dataTransaksi = resJson.transaksi || [];
+            const dataPengeluaran = resJson.pengeluaran || [];
+            
+            const mulaiRaw = localStorage.getItem("filterMulai") || new Date().toISOString().split('T')[0];
+            const selesaiRaw = localStorage.getItem("filterSelesai") || new Date().toISOString().split('T')[0];
+            
+            const dMulai = new Date(mulaiRaw);
+            dMulai.setHours(0,0,0,0);
+            const dSelesai = new Date(selesaiRaw);
+            dSelesai.setHours(23,59,59,999);
+
+            document.getElementById('tgl-sekarang').innerText = `Periode: ${mulaiRaw} s/d ${selesaiRaw}`;
+
+            let omzetTotal = 0, s1 = 0, s2 = 0, ppl = 0, pengeluaranTotal = 0;
+            let dataHarian = {};
+            let dataStudio = { "Classic Retro": 0, "Blue Room": 0 };
+            
+            const tableBody = document.getElementById('table-laporan');
+            tableBody.innerHTML = "";
+
+            // PROSES TRANSAKSI
+            dataTransaksi.forEach(item => {
+                let tglTeks = String(item.tanggal).trim().replace(/-/g, '/');
+                const bagian = tglTeks.split('/');
+                
+                if (bagian.length === 3) {
+                    const tglData = new Date(parseInt(bagian[2]), parseInt(bagian[1]) - 1, parseInt(bagian[0]));
+                    tglData.setHours(12,0,0,0);
+
+                    if (tglData >= dMulai && tglData <= dSelesai) {
+                        const harga = parseInt(item.total) || 0;
+                        const jmlOrang = parseInt(item.jumlah) || 0;
+
+                        omzetTotal += harga;
+                        ppl += jmlOrang;
+
+                        if (item.tema === "Classic Retro") {
+                            s1 += harga;
+                            dataStudio["Classic Retro"]++;
+                        } else if (item.tema === "Blue Room") {
+                            s2 += harga;
+                            dataStudio["Blue Room"]++;
+                        }
+
+                        dataHarian[tglTeks] = (dataHarian[tglTeks] || 0) + harga;
+
+                        const metode = (item.pembayaran || "Cash").toLowerCase();
+                        tableBody.innerHTML += `
+                            <tr>
+                                <td style="font-size:12px; opacity:0.7;">${tglTeks}</td>
+                                <td><strong>${item.nama}</strong></td>
+                                <td>${item.tema}</td>
+                                <td><span class="badge ${metode}">${item.pembayaran}</span></td>
+                                <td>Rp ${harga.toLocaleString('id-ID')}</td>
+                            </tr>
+                        `;
+                    }
+                }
+            });
+
+            // PROSES PENGELUARAN
+            dataPengeluaran.forEach(item => {
+                let tglTeks = String(item.tanggal).trim().replace(/-/g, '/');
+                const bagian = tglTeks.split('/');
+                if (bagian.length === 3) {
+                    const tglBiaya = new Date(parseInt(bagian[2]), parseInt(bagian[1]) - 1, parseInt(bagian[0]));
+                    tglBiaya.setHours(12,0,0,0);
+                    if (tglBiaya >= dMulai && tglBiaya <= dSelesai) {
+                        pengeluaranTotal += parseInt(item.jumlah) || 0;
+                    }
+                }
+            });
+
+            // UPDATE UI
+            const labaBersih = omzetTotal - pengeluaranTotal;
+
+            document.getElementById('total-omzet').innerText = "Rp " + omzetTotal.toLocaleString('id-ID');
+            document.getElementById('omzet-s1').innerText = "Rp " + s1.toLocaleString('id-ID');
+            document.getElementById('omzet-s2').innerText = "Rp " + s2.toLocaleString('id-ID');
+            document.getElementById('total-ppl').innerText = ppl + " Orang";
+            document.getElementById('total-pengeluaran').innerText = "Rp " + pengeluaranTotal.toLocaleString('id-ID');
+            
+            const elLaba = document.getElementById('laba-bersih');
+            elLaba.innerText = "Rp " + labaBersih.toLocaleString('id-ID');
+            if(labaBersih >= 0) {
+                elLaba.className = "profit-positive";
+            } else {
+                elLaba.className = "profit-negative";
+            }
+
+            tampilkanGrafik(dataHarian, dataStudio);
+
+        } catch (e) { 
+            console.error(e);
+            document.getElementById('table-laporan').innerHTML = "<tr><td colspan='5'>Gagal memuat data.</td></tr>";
+        }
+    }
+
+    function tampilkanGrafik(harian, studio) {
+        if (chartBatang) chartBatang.destroy();
+        if (chartLingkaran) chartLingkaran.destroy();
+
+        const ctxBar = document.getElementById('chartBatang').getContext('2d');
+        chartBatang = new Chart(ctxBar, {
+            type: 'line', // Diubah jadi line (garis area) agar lebih modern ala iOS
+            data: {
+                labels: Object.keys(harian),
+                datasets: [{ 
+                    label: 'Omzet', 
+                    data: Object.values(harian), 
+                    backgroundColor: 'rgba(0, 122, 255, 0.2)', // iOS Blue transparan
+                    borderColor: '#007AFF',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4 // Membuat garis melengkung halus
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        const ctxPie = document.getElementById('chartLingkaran').getContext('2d');
+        chartLingkaran = new Chart(ctxPie, {
+            type: 'doughnut', // Diubah dari pie jadi doughnut agar elegan
+            data: {
+                labels: Object.keys(studio),
+                datasets: [{ 
+                    data: Object.values(studio), 
+                    backgroundColor: ['#FF3B30', '#007AFF'], // Merah iOS & Biru iOS
+                    borderWidth: 0 // Hilangkan garis batas keras
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+        });
+    }
+
+    // Fungsi Ekspor CSV (Tidak berubah fungsinya)
+    function eksporKeCSV() {
+        let csv = "Tanggal,Nama,Tema,Metode,Total\n";
+        document.querySelectorAll("#table-laporan tr").forEach(tr => {
+            let row = [];
+            tr.querySelectorAll("td").forEach(td => row.push('"' + td.innerText + '"'));
+            csv += row.join(",") + "\n";
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "Laporan_Revolusi_Studio.csv";
+        link.click();
+    }
+
+    muatLaporan();
+</script>
+</body>
+</html>
