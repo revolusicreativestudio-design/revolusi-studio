@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Pengeluaran - Photobox</title>
+    <style>
+        body { font-family: sans-serif; background: #fdf5e6; padding: 20px; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; background: #8b0000; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-back { background: #666; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>💸 Catat Pengeluaran</h2>
+    <form id="formPengeluaran">
+        <input type="date" id="tgl-biaya" required>
+        
+        <select id="kategori" required>
+            <option value="">-- Pilih Kategori --</option>
+            <option value="Sewa">Sewa (Lapak/Tenda)</option>
+            <option value="Listrik">Tagihan Listrik</option>
+            <option value="Internet">Tagihan Internet</option>
+            <option value="Gaji">Gaji Karyawan</option>
+            <option value="Bahan">Bahan (Kertas/Tinta)</option>
+            <option value="Lainnya">Lain-lain</option>
+        </select>
+
+        <input type="text" id="keterangan" placeholder="Keterangan (misal: Beli Lakban)" required>
+        <input type="number" id="jumlah" placeholder="Jumlah (Rp)" required>
+
+        <button type="submit" id="btnSimpan">SIMPAN PENGELUARAN</button>
+    </form>
+    <button class="btn-back" onclick="window.location.href='index.html'">KEMBALI KE HOME</button>
+</div>
+
+<script>
+    const urlScript = "https://script.google.com/macros/s/AKfycbwNEt_u9QEpFaSEIlZonhkmrQngcY75_D0mIlBdGvZBYkrHMZxcxqrclb5qOX42na9PaQ/exec";
+
+    document.getElementById('formPengeluaran').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnSimpan');
+        btn.innerText = "Mengirim...";
+        btn.disabled = true;
+
+        // Format tanggal ke DD/MM/YYYY agar sesuai dengan Sheets
+        const rawDate = document.getElementById('tgl-biaya').value.split('-');
+        const tglFormatted = `${rawDate[2]}/${rawDate[1]}/${rawDate[0]}`;
+
+        const data = {
+            type: "pengeluaran",
+            tanggal: tglFormatted,
+            kategori: document.getElementById('kategori').value,
+            keterangan: document.getElementById('keterangan').value,
+            jumlah: document.getElementById('jumlah').value
+        };
+
+        try {
+            await fetch(urlScript, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+            alert("Pengeluaran berhasil dicatat!");
+            document.getElementById('formPengeluaran').reset();
+        } catch (err) {
+            alert("Gagal menyimpan data.");
+        } finally {
+            btn.innerText = "SIMPAN PENGELUARAN";
+            btn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>

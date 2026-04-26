@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penjualan Add-on - Revolusi Studio</title>
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --ios-blue: #007AFF;
+            --ios-green: #34C759;
+            --text-main: #ffffff;
+        }
+
+        body {
+            margin: 0; padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1614851099511-773084f6911d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            color: var(--text-main); min-height: 100vh;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; display: flex; gap: 20px; flex-wrap: wrap; }
+
+        .glass-card {
+            background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border); border-radius: 30px; padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        /* Bagian Kiri: Katalog Produk */
+        .katalog-section { flex: 2; min-width: 300px; }
+        .header { margin-bottom: 25px; }
+        .header h1 { margin: 0; font-size: 28px; font-weight: 800; }
+        .header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
+
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+        .product-card {
+            background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; padding: 20px; text-align: center; transition: 0.3s;
+        }
+        .product-card:hover { transform: translateY(-5px); background: rgba(0,0,0,0.3); }
+        .product-icon { font-size: 40px; margin-bottom: 10px; }
+        .product-card h3 { margin: 0 0 5px; font-size: 15px; }
+        .product-card p { margin: 0 0 15px; font-size: 16px; font-weight: 700; color: #85e09b; }
+
+        .qty-controls { display: flex; justify-content: center; align-items: center; gap: 15px; }
+        .btn-qty {
+            width: 35px; height: 35px; border-radius: 50%; border: none; font-size: 20px; font-weight: bold;
+            background: rgba(255,255,255,0.2); color: white; cursor: pointer; transition: 0.2s;
+        }
+        .btn-qty:hover { background: rgba(255,255,255,0.4); }
+        .btn-qty:active { transform: scale(0.9); }
+        .qty-number { font-size: 18px; font-weight: 600; width: 20px; }
+
+        /* Bagian Kanan: Keranjang Kasir */
+        .cart-section { flex: 1; min-width: 280px; display: flex; flex-direction: column; }
+        .cart-list { flex: 1; background: rgba(0,0,0,0.15); border-radius: 20px; padding: 15px; margin-bottom: 20px; min-height: 200px; }
+        .cart-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; padding-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.2); }
+        
+        .total-box { text-align: right; margin-bottom: 20px; }
+        .total-box p { margin: 0; font-size: 14px; opacity: 0.8; }
+        .total-box h2 { margin: 0; font-size: 32px; color: #85e09b; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; margin-bottom: 5px; opacity: 0.9; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px; color: white; box-sizing: border-box; font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--ios-blue); }
+        option { background: #1e3c72; }
+
+        .btn-pay {
+            width: 100%; padding: 16px; background: var(--ios-blue); color: white;
+            border: none; border-radius: 15px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+        .btn-pay:active { transform: scale(0.96); }
+        .btn-back { background: rgba(255,255,255,0.1); box-shadow: none; border: 1px solid var(--glass-border); margin-bottom: 20px; width: auto; padding: 10px 20px; border-radius: 12px; color: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<button onclick="window.location.href='index.html'" class="btn-back">⬅ Kembali ke Dashboard</button>
+
+<div class="container">
+    <div class="glass-card katalog-section">
+        <div class="header">
+            <h1>🛒 Ekstra Produk</h1>
+            <p>Tawarkan merchandise dan cetak foto tambahan.</p>
+        </div>
+
+        <div class="product-grid" id="katalog">
+            </div>
+    </div>
+
+    <div class="glass-card cart-section">
+        <h2 style="margin-top: 0; font-size: 20px;">Keranjang</h2>
+        <div class="cart-list" id="cart-list">
+            <p style="text-align: center; opacity: 0.5; margin-top: 50px;">Belum ada produk dipilih.</p>
+        </div>
+
+        <div class="total-box">
+            <p>Total Bayar</p>
+            <h2 id="grand-total">Rp 0</h2>
+        </div>
+
+        <div class="form-group">
+            <label>Nama Pembeli (Opsional)</label>
+            <input type="text" id="nama-pembeli" placeholder="Nama Pelanggan / Walk-in">
+        </div>
+        <div class="form-group">
+            <label>Metode Pembayaran</label>
+            <select id="metode-bayar">
+                <option value="Cash">Tunai / Cash</option>
+                <option value="QRIS">QRIS / Transfer</option>
+            </select>
+        </div>
+
+        <button class="btn-pay" id="btn-proses" onclick="prosesPembayaran()">Proses Transaksi</button>
+    </div>
+</div>
+
+    <script>
+    // =========================================================
+    // ⚠️ GANTI DENGAN URL APPS SCRIPT NEW DEPLOYMENT ANDA ⚠️
+    // =========================================================
+    const urlScript = "https://script.google.com/macros/s/AKfycbwNEt_u9QEpFaSEIlZonhkmrQngcY75_D0mIlBdGvZBYkrHMZxcxqrclb5qOX42na9PaQ/exec";
+    
+    let keranjang = {};
+    let daftarProdukLive = [];
+
+    // 1. Ambil data produk dari Google Sheets
+    async function muatKatalogLive() {
+        const grid = document.getElementById('katalog');
+        grid.innerHTML = "<p style='text-align:center; width:100%; opacity:0.7;'>Sinkronisasi Produk...</p>";
+        
+        try {
+            const res = await fetch(urlScript);
+            const resJson = await res.json();
+            daftarProdukLive = resJson.produk_addon || [];
+            
+            grid.innerHTML = "";
+            if (daftarProdukLive.length === 0) {
+                grid.innerHTML = "<p style='text-align:center; width:100%; opacity:0.5;'>Belum ada produk di katalog. Tambahkan via Setting!</p>";
+                return;
+            }
+
+            daftarProdukLive.forEach(p => {
+                const id = p.id;
+                keranjang[id] = 0;
+                
+                const media = p.image_url 
+                    ? `<img src="${p.image_url}" style="width:100%; height:120px; object-fit:cover; border-radius:15px; margin-bottom:10px;">` 
+                    : `<div style="font-size:40px; margin-bottom:10px;">${p.ikon || '📦'}</div>`;
+                
+                grid.innerHTML += `
+                    <div class="product-card">
+                        ${media}
+                        <h3>${p.nama}</h3>
+                        <p>Rp ${parseInt(p.harga).toLocaleString('id-ID')}</p>
+                        <div class="qty-controls">
+                            <button class="btn-qty" onclick="ubahQty('${id}', -1)">-</button>
+                            <span class="qty-number" id="qty-${id}">0</span>
+                            <button class="btn-qty" onclick="ubahQty('${id}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+        } catch (e) {
+            grid.innerHTML = "<p style='color:#ff8a80; text-align:center; width:100%;'>Gagal memuat katalog.</p>";
+        }
+    }
+
+    // 2. Fungsi Tambah/Kurang Keranjang
+    function ubahQty(id, jumlah) {
+        if(keranjang[id] + jumlah >= 0) {
+            keranjang[id] += jumlah;
+            document.getElementById(`qty-${id}`).innerText = keranjang[id];
+            updateKeranjang();
+        }
+    }
+
+    // 3. Render Keranjang Belanja
+    function updateKeranjang() {
+        const list = document.getElementById('cart-list');
+        list.innerHTML = "";
+        let grandTotal = 0;
+        let adaBarang = false;
+
+        daftarProdukLive.forEach(p => {
+            if(keranjang[p.id] > 0) {
+                adaBarang = true;
+                const subtotal = keranjang[p.id] * parseInt(p.harga);
+                grandTotal += subtotal;
+                list.innerHTML += `
+                    <div class="cart-item">
+                        <span>${keranjang[p.id]}x ${p.nama}</span>
+                        <strong>Rp ${subtotal.toLocaleString('id-ID')}</strong>
+                    </div>
+                `;
+            }
+        });
+
+        if(!adaBarang) list.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Belum ada produk dipilih.</p>`;
+        document.getElementById('grand-total').innerText = "Rp " + grandTotal.toLocaleString('id-ID');
+    }
+
+    // 4. Proses Transaksi ke Google Sheets
+    async function prosesPembayaran() {
+        let totalBelanja = 0;
+        let rincianBarang = [];
+        let totalItem = 0;
+
+        // Hitung total dari data LIVE
+        daftarProdukLive.forEach(p => {
+            if(keranjang[p.id] > 0) {
+                totalBelanja += keranjang[p.id] * parseInt(p.harga);
+                totalItem += keranjang[p.id];
+                rincianBarang.push(`${keranjang[p.id]}x ${p.nama}`);
+            }
+        });
+
+        if(totalBelanja === 0) { 
+            alert("⚠️ Pilih produknya dulu, Bos!"); 
+            return; 
+        }
+
+        const btn = document.getElementById('btn-proses');
+        const namaPembeli = document.getElementById('nama-pembeli').value || "Pelanggan Add-on";
+        const metode = document.getElementById('metode-bayar').value;
+
+        btn.innerText = "⏳ Memproses...";
+        btn.disabled = true;
+
+        const d = new Date();
+        const tglHariIni = d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
+
+        const payload = {
+            type: "daftar", 
+            tanggal: tglHariIni,
+            nama: namaPembeli,
+            wa: "-", 
+            status: "Selesai", 
+            tema: "MERCH: " + rincianBarang.join(", "),
+            jumlah: totalItem,
+            pembayaran: metode,
+            total: totalBelanja
+        };
+
+        try {
+            const resp = await fetch(urlScript, { 
+                method: 'POST', 
+                // TAMBAHAN ANTI-BLOKIR
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload) 
+            });
+            
+            const hasil = await resp.text();
+
+            if (hasil && hasil.toLowerCase().includes("sukses")) {
+                alert(`✅ Transaksi Berhasil!\nTotal: Rp ${totalBelanja.toLocaleString('id-ID')} (${metode})`);
+                
+                // Reset keranjang
+                daftarProdukLive.forEach(p => { 
+                    keranjang[p.id] = 0; 
+                    const qtyEl = document.getElementById(`qty-${p.id}`);
+                    if(qtyEl) qtyEl.innerText = 0; 
+                });
+                document.getElementById('nama-pembeli').value = "";
+                updateKeranjang();
+            } else {
+                alert("❌ Gagal memproses: " + hasil);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("❌ Terjadi kesalahan jaringan! Cek koneksi Anda.");
+        } finally {
+            btn.innerText = "Proses Transaksi";
+            btn.disabled = false;
+        }
+    }
+
+    // Jalankan saat pertama buka
+    muatKatalogLive();
+</script>
+
+</body>
+</html>

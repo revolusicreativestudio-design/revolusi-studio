@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histori Tutup Kasir</title>
+    <style>
+        :root { --glass: rgba(255, 255, 255, 0.15); --glass-border: rgba(255, 255, 255, 0.25); --ios-blue: #007AFF; --text-main: #ffffff; }
+        body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text-main); background: transparent; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 25px; padding: 25px; }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { margin: 0 0 5px 0; font-size: 24px; font-weight: 800; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: rgba(255, 255, 255, 0.1); padding: 15px; font-size: 12px; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 14px; font-weight: 500; }
+        .badge { padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; display: inline-block;}
+        .minus { background: rgba(255, 59, 48, 0.2); color: #ff8a80; }
+        .plus { background: rgba(52, 199, 89, 0.2); color: #85e09b; }
+        .pas { background: rgba(0, 122, 255, 0.2); color: #80c1ff; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="glass-card">
+        <div class="header">
+            <h1>Histori Kinerja Kasir (Closing)</h1>
+            <p style="opacity:0.7; font-size:14px;">Pantau selisih laci kasir setiap pergantian shift.</p>
+        </div>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Waktu Closing</th>
+                        <th>Laci (Fisik)</th>
+                        <th>Sistem (Seharusnya)</th>
+                        <th>Selisih & Status</th>
+                    </tr>
+                </thead>
+                <tbody id="table-histori">
+                    <tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const urlScript = "https://script.google.com/macros/s/AKfycbwNEt_u9QEpFaSEIlZonhkmrQngcY75_D0mIlBdGvZBYkrHMZxcxqrclb5qOX42na9PaQ/exec";
+
+    async function muatHistori() {
+        try {
+            const res = await fetch(urlScript);
+            const resJson = await res.json();
+            const dataHistori = resJson.histori || [];
+            
+            const tbody = document.getElementById('table-histori');
+            tbody.innerHTML = "";
+
+            if(dataHistori.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>Belum ada histori closing.</td></tr>";
+                return;
+            }
+
+            dataHistori.reverse().forEach(item => {
+                const selisih = parseInt(item.selisih) || 0;
+                let classBadge = "pas";
+                let teksStatus = "BALANCE";
+                
+                if(selisih < 0) { classBadge = "minus"; teksStatus = "KURANG"; }
+                else if(selisih > 0) { classBadge = "plus"; teksStatus = "LEBIH"; }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-size:12px; opacity:0.8;">${item.tanggal}</td>
+                        <td>Rp ${parseInt(item.fisik).toLocaleString('id-ID')}</td>
+                        <td>Rp ${parseInt(item.sistem).toLocaleString('id-ID')}</td>
+                        <td>
+                            <div class="badge ${classBadge}">
+                                ${selisih < 0 ? "" : selisih > 0 ? "+" : ""}Rp ${selisih.toLocaleString('id-ID')} (${teksStatus})
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (e) {
+            document.getElementById('table-histori').innerHTML = "<tr><td colspan='4' style='color:red;'>Gagal sinkronisasi data.</td></tr>";
+        }
+    }
+    muatHistori();
+</script>
+</body>
+</html>

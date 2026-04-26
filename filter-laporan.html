@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pilih Periode - Revolusi Studio</title>
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --ios-blue: #007AFF;
+            --text-main: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1614851099511-773084f6911d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-main);
+        }
+
+        .glass-container {
+            width: 90%;
+            max-width: 400px;
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 35px;
+            padding: 40px 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        h1 { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
+        p.subtitle { font-size: 14px; opacity: 0.8; margin-bottom: 30px; }
+
+        .form-group { text-align: left; margin-bottom: 20px; }
+        label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 8px; margin-left: 5px; opacity: 0.9; }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            color: white;
+            font-size: 16px;
+            font-family: inherit;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input[type="date"]:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.3);
+            border-color: var(--ios-blue);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
+        }
+
+        /* Mengubah warna ikon kalender bawaan browser agar terlihat di background gelap */
+        ::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.8;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: var(--ios-blue);
+            color: white;
+            border: none;
+            border-radius: 18px;
+            font-size: 17px;
+            font-weight: 600;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
+        }
+
+        button:active { transform: scale(0.96); }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            box-shadow: none;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="glass-container">
+    <div style="font-size: 40px; margin-bottom: 10px;">📅</div>
+    <h1>Periode Laporan</h1>
+    <p class="subtitle">Tentukan rentang tanggal laporan keuangan yang ingin ditampilkan.</p>
+
+    <div class="form-group">
+        <label>Mulai Tanggal</label>
+        <input type="date" id="tglMulai" required>
+    </div>
+
+    <div class="form-group">
+        <label>Sampai Tanggal</label>
+        <input type="date" id="tglSelesai" required>
+    </div>
+
+    <button onclick="bukaLaporan()">Lihat Laporan</button>
+    <button onclick="window.location.href='index.html'" class="btn-back">Kembali ke Menu</button>
+</div>
+
+<script>
+    // Set default tanggal ke hari ini
+    const hariIni = new Date().toISOString().split('T')[0];
+    document.getElementById('tglMulai').value = hariIni;
+    document.getElementById('tglSelesai').value = hariIni;
+
+    function bukaLaporan() {
+        const mulai = document.getElementById('tglMulai').value;
+        const selesai = document.getElementById('tglSelesai').value;
+
+        if (!mulai || !selesai) {
+            alert("Pilih tanggalnya dulu ya, Bos!");
+            return;
+        }
+
+        if (new Date(mulai) > new Date(selesai)) {
+            alert("Tanggal mulai tidak boleh lebih dari tanggal selesai!");
+            return;
+        }
+
+        // Simpan pilihan tanggal ke memori browser
+        localStorage.setItem("filterMulai", mulai);
+        localStorage.setItem("filterSelesai", selesai);
+
+        // Langsung arahkan ke halaman laporan utama
+        window.location.href = "laporan.html";
+    }
+</script>
+
+</body>
+</html>
