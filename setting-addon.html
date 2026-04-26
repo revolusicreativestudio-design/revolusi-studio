@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setting Add-on - Revolusi Studio</title>
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --ios-blue: #007AFF;
+            --text-main: #ffffff;
+        }
+
+        body {
+            margin: 0; 
+            padding: 20px; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-main); 
+            /* Background transparan jika dimuat di iframe panel kanan */
+            background: transparent; 
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .header { margin-bottom: 25px; text-align: center; }
+        .header h2 { margin: 0 0 5px 0; font-size: 24px; font-weight: 800; }
+        .header p { margin: 0; opacity: 0.8; font-size: 14px; }
+
+        .form-row { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; }
+        .form-group { flex: 1; min-width: 200px; text-align: left; margin-bottom: 15px; }
+        
+        label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 8px; margin-left: 5px; opacity: 0.9; }
+
+        input {
+            width: 100%; padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px; color: white; font-size: 15px;
+            box-sizing: border-box; transition: all 0.3s ease;
+        }
+        input:focus { outline: none; background: rgba(0, 0, 0, 0.4); border-color: var(--ios-blue); }
+
+        button {
+            width: 100%; padding: 16px;
+            background: var(--ios-blue); color: white;
+            border: none; border-radius: 15px; font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
+            margin-top: 10px;
+        }
+        button:active { transform: scale(0.96); }
+        button:disabled { background: rgba(255,255,255,0.3); cursor: not-allowed; box-shadow: none; }
+
+        /* Tabel Produk */
+        .table-wrapper { overflow-x: auto; margin-top: 30px; background: rgba(0,0,0,0.1); border-radius: 15px; padding: 15px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: rgba(255, 255, 255, 0.1); padding: 12px 15px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-radius: 8px 8px 0 0; }
+        td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 14px; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        
+        .img-preview { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); }
+        .ikon-preview { font-size: 30px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="glass-card">
+        <div class="header">
+            <div style="font-size: 40px; margin-bottom: 10px;">⚙️</div>
+            <h2>Pengaturan Katalog Add-on</h2>
+            <p>Tambah merchandise atau paket cetak baru ke kasir.</p>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group" style="flex: 2;">
+                <label>Nama Produk</label>
+                <input type="text" id="p-nama" placeholder="Misal: Gantungan Kunci" required>
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>Harga (Hanya Angka)</label>
+                <input type="number" id="p-harga" placeholder="15000" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group" style="flex: 3;">
+                <label>Link Foto URL (Opsional)</label>
+                <input type="text" id="p-img" placeholder="https://i.ibb.co/...">
+                <div style="font-size: 11px; opacity: 0.6; margin-top: 5px; margin-left: 5px;">*Gunakan link dari ImgBB atau biarkan kosong jika pakai ikon.</div>
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>Ikon Emoji</label>
+                <input type="text" id="p-ikon" placeholder="🔑">
+            </div>
+        </div>
+
+        <button onclick="simpanProduk()" id="btn-save">➕ Tambah ke Katalog</button>
+
+        <div class="table-wrapper">
+            <h3 style="margin-top: 0; font-size: 16px; opacity: 0.9; margin-bottom: 15px;">Daftar Produk Aktif</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Visual</th>
+                        <th>Nama Produk</th>
+                        <th>Harga</th>
+                    </tr>
+                </thead>
+                <tbody id="list-produk">
+                    <tr><td colspan="3" style="text-align:center; opacity:0.7;">Memuat data produk...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // =========================================================
+    // ⚠️ GANTI DENGAN URL APPS SCRIPT NEW DEPLOYMENT ANDA ⚠️
+    // =========================================================
+    const urlScript = "https://script.google.com/macros/s/AKfycbwNEt_u9QEpFaSEIlZonhkmrQngcY75_D0mIlBdGvZBYkrHMZxcxqrclb5qOX42na9PaQ/exec";
+
+    // 1. Fungsi Mengambil Data Produk yang sudah ada
+    async function muatProduk() {
+        const list = document.getElementById('list-produk');
+        try {
+            const res = await fetch(urlScript);
+            const data = await res.json();
+            
+            const produkList = data.produk_addon || [];
+            list.innerHTML = "";
+
+            if (produkList.length === 0) {
+                list.innerHTML = "<tr><td colspan='3' style='text-align:center; opacity:0.5;'>Belum ada produk terdaftar.</td></tr>";
+                return;
+            }
+
+            // Tampilkan dari yang paling baru ditambahkan
+            produkList.reverse().forEach(p => {
+                const media = p.image_url 
+                    ? `<img src="${p.image_url}" class="img-preview" alt="Foto">` 
+                    : `<div class="ikon-preview">${p.ikon || '📦'}</div>`;
+
+                list.innerHTML += `
+                    <tr>
+                        <td style="width: 60px; text-align: center;">${media}</td>
+                        <td style="font-weight: 600;">${p.nama}</td>
+                        <td style="color: #85e09b; font-weight: bold;">Rp ${parseInt(p.harga).toLocaleString('id-ID')}</td>
+                    </tr>
+                `;
+            });
+        } catch (e) {
+            console.error(e);
+            list.innerHTML = "<tr><td colspan='3' style='color:#ff8a80; text-align:center;'>Gagal memuat data dari server.</td></tr>";
+        }
+    }
+
+    // 2. Fungsi Menyimpan Produk Baru ke Google Sheets
+    async function simpanProduk() {
+        const btn = document.getElementById('btn-save');
+        const nama = document.getElementById('p-nama').value;
+        const harga = document.getElementById('p-harga').value;
+        const img = document.getElementById('p-img').value;
+        const ikon = document.getElementById('p-ikon').value;
+
+        // Validasi input kosong
+        if (!nama || !harga) {
+            alert("⚠️ Nama Produk dan Harga wajib diisi!");
+            return;
+        }
+
+        btn.innerText = "⏳ Sedang Menyimpan...";
+        btn.disabled = true;
+
+        const payload = {
+            type: "update_produk",
+            nama: nama,
+            harga: harga,
+            image_url: img,
+            ikon: ikon
+        };
+
+        try {
+            const response = await fetch(urlScript, {
+                method: 'POST',
+                // Surat jalan (Headers) agar Chrome/Browser tidak memblokir request
+                headers: {
+                    "Content-Type": "text/plain;charset=utf-8"
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const hasil = await response.text();
+            
+            if (hasil && hasil.toLowerCase().includes("sukses")) {
+                alert("✅ Produk Berhasil Ditambahkan ke Katalog!");
+                // Kosongkan form
+                document.getElementById('p-nama').value = "";
+                document.getElementById('p-harga').value = "";
+                document.getElementById('p-img').value = "";
+                document.getElementById('p-ikon').value = "";
+                
+                // Refresh tabel otomatis
+                muatProduk(); 
+            } else {
+                alert("❌ Gagal Simpan: " + (hasil || "Ditolak oleh Server Google. Cek izin Deploy!"));
+            }
+        } catch (error) {
+            console.error(error);
+            alert("❌ Terjadi kesalahan koneksi! Pastikan internet stabil dan URL Script sudah benar.");
+        } finally {
+            btn.innerText = "➕ Tambah ke Katalog";
+            btn.disabled = false;
+        }
+    }
+
+    // Muat data tabel saat halaman pertama kali dibuka
+    muatProduk();
+</script>
+
+</body>
+</html>

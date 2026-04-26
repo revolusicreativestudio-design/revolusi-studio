@@ -142,11 +142,14 @@
     <nav class="sidebar">
         <div class="brand" onclick="tekanRahasia()" title="Klik 3x untuk buka Management">📸 <span>Revolusi Photobox</span></div>
         
-        <div class="menu-section">
+        <<div class="menu-section">
             <div class="menu-label">Main Menu</div>
             <a onclick="bukaHome(this)" class="menu-item active">🏠 <span>Home</span></a>
+            
             <a href="daftar.html" class="menu-item">📝 <span>Pendaftaran</span></a>
             <a href="monitor.html" class="menu-item">📺 <span>Monitor Antrean</span></a>
+            
+            <a href="add-on.html" class="menu-item">🛍️ <span>Penjualan Add-on</span></a>
         </div>
 
         <div class="menu-section" id="menu-management" style="display: none;">
@@ -159,7 +162,13 @@
             <a onclick="cekAkses(this, 'aset.html')" class="menu-item">💻 <span>Inventaris Aset</span></a>
         </div>
 
-        <a onclick="kunciUlang()" class="menu-item btn-lock" id="tombol-kunci" style="display: none;">🔒 <span>Kunci Sistem</span></a>
+        <a onclick="cekAkses(this, 'setting-addon.html')" class="menu-item" id="tombol-setting" style="display: none; margin-top: 5px; opacity: 0.6;">
+            ⚙️ <span>Setting Add-on</span>
+        </a>
+
+        <a onclick="kunciUlang()" class="menu-item btn-lock" id="tombol-kunci" style="display: none;">
+            🔒 <span>Kunci Sistem</span>
+        </a>
     </nav>
 
     <main class="main-content">
@@ -243,29 +252,23 @@
         let waktuKlik;
 
         function tekanRahasia() {
-            klikRahasia++;
-            clearTimeout(waktuKlik);
-            
-            // Jika lebih dari 1 detik tidak diklik, hitungan reset ke 0
-            waktuKlik = setTimeout(() => { klikRahasia = 0; }, 1000);
+    klikRahasia++;
+    clearTimeout(waktuKlik);
+    waktuKlik = setTimeout(() => { klikRahasia = 0; }, 1000);
 
-            // Jika berhasil klik 3x dengan cepat
-            if (klikRahasia === 3) {
-                const menuMgmt = document.getElementById('menu-management');
-                const btnKunci = document.getElementById('tombol-kunci');
-                
-                if (menuMgmt.style.display === 'none') {
-                    // Munculkan Menu
-                    menuMgmt.style.display = 'block';
-                    btnKunci.style.display = 'flex';
-                } else {
-                    // Sembunyikan Menu
-                    menuMgmt.style.display = 'none';
-                    btnKunci.style.display = 'none';
-                }
-                klikRahasia = 0; // Reset
-            }
-        }
+    if (klikRahasia === 3) {
+        const menuMgmt = document.getElementById('menu-management');
+        const btnKunci = document.getElementById('tombol-kunci');
+        const btnSet = document.getElementById('tombol-setting'); // Tambahkan ini
+        
+        const isHidden = menuMgmt.style.display === 'none';
+        menuMgmt.style.display = isHidden ? 'block' : 'none';
+        btnKunci.style.display = isHidden ? 'flex' : 'none';
+        btnSet.style.display = isHidden ? 'flex' : 'none'; // Ikut muncul/sembunyi
+        
+        klikRahasia = 0;
+    }
+}
         // ==========================================
 
         function cekAkses(elemen, url) {

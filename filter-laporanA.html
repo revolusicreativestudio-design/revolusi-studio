@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Keuangan - Revolusi Studio</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --ios-blue: #007AFF;
+            --ios-red: #FF3B30;
+            --ios-green: #34C759;
+            --text-main: #ffffff;
+        }
+
+        body {
+            margin: 0; padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-main); background: transparent;
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        .glass-card {
+            background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border); border-radius: 25px; padding: 25px; margin-bottom: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { margin: 0; font-size: 24px; font-weight: 800; }
+        .btn-refresh { background: var(--ios-blue); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-refresh:active { transform: scale(0.95); }
+
+        /* Kartu Ringkasan (Summary) */
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-box { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; }
+        .stat-box h3 { margin: 0 0 5px; font-size: 13px; opacity: 0.7; text-transform: uppercase; }
+        .stat-box p { margin: 0; font-size: 24px; font-weight: 800; }
+        .stat-omzet p { color: var(--ios-blue); }
+        .stat-keluar p { color: #ff8a80; }
+        .stat-laba p { color: var(--ios-green); }
+
+        /* Area Grafik yang dikunci tingginya agar tidak bug scrolling */
+        .chart-container {
+            position: relative;
+            height: 350px; 
+            width: 100%;
+            background: rgba(0,0,0,0.15);
+            border-radius: 20px;
+            padding: 15px;
+            box-sizing: border-box;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Tabel Data Transaksi */
+        .table-wrapper { overflow-x: auto; margin-top: 25px; background: rgba(0,0,0,0.1); border-radius: 15px; padding: 15px; max-height: 400px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: rgba(255, 255, 255, 0.1); padding: 12px; font-size: 12px; position: sticky; top: 0; z-index: 1; backdrop-filter: blur(10px); }
+        td { padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="glass-card">
+        <div class="header">
+            <div>
+                <h2>📊 Analitik Keuangan</h2>
+                <p style="margin: 5px 0 0; opacity: 0.7; font-size: 14px;">Ringkasan Omzet & Pengeluaran Studio</p>
+            </div>
+            <button class="btn-refresh" id="btn-muat" onclick="muatDataKeuangan()">🔄 Segarkan Data</button>
+        </div>
+
+        <div class="summary-grid">
+            <div class="stat-box stat-omzet">
+                <h3>Total Omzet</h3>
+                <p id="tot-omzet">Rp 0</p>
+            </div>
+            <div class="stat-box stat-keluar">
+                <h3>Total Pengeluaran</h3>
+                <p id="tot-keluar">Rp 0</p>
+            </div>
+            <div class="stat-box stat-laba">
+                <h3>Laba Bersih</h3>
+                <p id="tot-laba">Rp 0</p>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="grafikKeuangan"></canvas>
+        </div>
+
+        <div class="table-wrapper">
+            <h3 style="margin-top: 0; font-size: 14px; opacity: 0.8;">Histori Transaksi Terakhir</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Keterangan / Pelanggan</th>
+                        <th>Tipe</th>
+                        <th>Nominal</th>
+                    </tr>
+                </thead>
+                <tbody id="tabel-data">
+                    <tr><td colspan="4" style="text-align:center;">Tekan tombol Segarkan Data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // =========================================================
+    // ⚠️ GANTI DENGAN URL APPS SCRIPT ANDA ⚠️
+    // =========================================================
+    const urlScript = "https://script.google.com/macros/s/AKfycbwNEt_u9QEpFaSEIlZonhkmrQngcY75_D0mIlBdGvZBYkrHMZxcxqrclb5qOX42na9PaQ/exec";
+    
+    let grafikInstance = null; // Variabel penampung grafik agar bisa di-reset
+
+    async function muatDataKeuangan() {
+        const btn = document.getElementById('btn-muat');
+        btn.innerText = "⏳ Memuat...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(urlScript);
+            const data = await res.json();
+            
+            const transaksi = data.transaksi || [];
+            const pengeluaran = data.pengeluaran || [];
+
+            let totalOmzet = 0;
+            let totalKeluar = 0;
+            
+            // Siapkan struktur data untuk Grafik (Dikelompokkan per tanggal)
+            let grafikData = {};
+
+            // 1. Olah Data Transaksi (Pemasukan)
+            let historiTabel = [];
+            
+            transaksi.forEach(t => {
+                if (String(t.status).trim().toLowerCase() === "selesai") {
+                    const nominal = parseInt(t.total) || 0;
+                    totalOmzet += nominal;
+                    
+                    // Ambil tanggal saja (potong jam jika ada)
+                    const tgl = String(t.tanggal || t.Tanggal).trim().split(' ')[0];
+                    
+                    if (!grafikData[tgl]) grafikData[tgl] = { omzet: 0, keluar: 0 };
+                    grafikData[tgl].omzet += nominal;
+
+                    historiTabel.push({
+                        tglAsli: t.tanggal,
+                        tgl: tgl,
+                        ket: t.nama || "Pelanggan Add-on",
+                        tipe: "Pemasukan",
+                        nominal: nominal,
+                        warna: "#85e09b"
+                    });
+                }
+            });
+
+            // 2. Olah Data Pengeluaran
+            pengeluaran.forEach(p => {
+                const nominal = parseInt(p.jumlah) || 0;
+                totalKeluar += nominal;
+
+                const tgl = String(p.tanggal || p.Tanggal).trim().split(' ')[0];
+                
+                if (!grafikData[tgl]) grafikData[tgl] = { omzet: 0, keluar: 0 };
+                grafikData[tgl].keluar += nominal;
+
+                historiTabel.push({
+                    tglAsli: p.tanggal,
+                    tgl: tgl,
+                    ket: p.keterangan || p.kategori,
+                    tipe: "Pengeluaran",
+                    nominal: nominal,
+                    warna: "#ff8a80"
+                });
+            });
+
+            // 3. Update Kartu Ringkasan
+            const labaBersih = totalOmzet - totalKeluar;
+            document.getElementById('tot-omzet').innerText = "Rp " + totalOmzet.toLocaleString('id-ID');
+            document.getElementById('tot-keluar').innerText = "Rp " + totalKeluar.toLocaleString('id-ID');
+            document.getElementById('tot-laba').innerText = "Rp " + labaBersih.toLocaleString('id-ID');
+
+            // 4. Render Tabel (Urutkan dari yang terbaru)
+            const tbody = document.getElementById('tabel-data');
+            tbody.innerHTML = "";
+            historiTabel.reverse().forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.tgl}</td>
+                        <td>${item.ket}</td>
+                        <td>${item.tipe}</td>
+                        <td style="color: ${item.warna}; font-weight: bold;">Rp ${item.nominal.toLocaleString('id-ID')}</td>
+                    </tr>
+                `;
+            });
+
+            if(historiTabel.length === 0) tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>Belum ada data keuangan.</td></tr>";
+
+            // 5. Render Grafik (Chart.js)
+            renderGrafik(grafikData);
+
+        } catch (e) {
+            console.error(e);
+            alert("❌ Gagal memuat data dari server!");
+        } finally {
+            btn.innerText = "🔄 Segarkan Data";
+            btn.disabled = false;
+        }
+    }
+
+    function renderGrafik(dataMentah) {
+        // Ekstrak label tanggal dan data set-nya (diurutkan berdasarkan tanggal)
+        const labels = Object.keys(dataMentah).sort();
+        const dataOmzet = labels.map(tgl => dataMentah[tgl].omzet);
+        const dataKeluar = labels.map(tgl => dataMentah[tgl].keluar);
+
+        const ctx = document.getElementById('grafikKeuangan').getContext('2d');
+
+        // Hancurkan grafik lama jika tombol refresh ditekan berkali-kali
+        if (grafikInstance) {
+            grafikInstance.destroy();
+        }
+
+        // Konfigurasi Chart.js Liquid Glass
+        Chart.defaults.color = 'rgba(255, 255, 255, 0.7)';
+        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+
+        grafikInstance = new Chart(ctx, {
+            type: 'line', // Jenis grafik garis
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Omzet Harian',
+                        data: dataOmzet,
+                        borderColor: '#007AFF', // Biru iOS
+                        backgroundColor: 'rgba(0, 122, 255, 0.2)',
+                        borderWidth: 3,
+                        tension: 0.4, // Membuat garis melengkung halus
+                        fill: true,
+                        pointBackgroundColor: '#007AFF'
+                    },
+                    {
+                        label: 'Pengeluaran',
+                        data: dataKeluar,
+                        borderColor: '#FF3B30', // Merah iOS
+                        backgroundColor: 'rgba(255, 59, 48, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#FF3B30'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        padding: 15,
+                        titleFont: { size: 14 },
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed.y !== null) {
+                                    label += 'Rp ' + context.parsed.y.toLocaleString('id-ID');
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            callback: function(value) {
+                                // Format angka di sumbu Y (Misal 1.000.000 jadi 1Jt)
+                                if (value >= 1000000) return (value / 1000000) + 'Jt';
+                                if (value >= 1000) return (value / 1000) + 'Rb';
+                                return value;
+                            }
+                        }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // Jalankan otomatis saat halaman dibuka
+    muatDataKeuangan();
+</script>
+
+</body>
+</html>
