@@ -3,55 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Input Pengeluaran - Photobox</title>
+    <title>Input Pengeluaran - Revolusi Studio</title>
     <style>
-        body { font-family: sans-serif; background: #fdf5e6; padding: 20px; text-align: center; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; background: #8b0000; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-back { background: #666; margin-top: 10px; }
+        :root {
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --ios-red: #FF3B30;
+            --text-main: #ffffff;
+        }
+
+        body {
+            margin: 0; padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-main);
+            /* Background transparan agar menyatu dengan Dashboard saat dibuka di iframe */
+            background: transparent; 
+        }
+
+        .container { max-width: 500px; margin: 0 auto; }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .header h2 { margin: 0 0 5px 0; font-size: 24px; font-weight: 800; }
+        .header p { margin: 0 0 25px 0; opacity: 0.8; font-size: 14px; }
+
+        .form-group { text-align: left; margin-bottom: 15px; }
+        label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 8px; margin-left: 5px; opacity: 0.9; }
+
+        input, select {
+            width: 100%; padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px; color: white; font-size: 15px;
+            box-sizing: border-box; transition: all 0.3s ease;
+        }
+        input:focus, select:focus { outline: none; background: rgba(0, 0, 0, 0.4); border-color: var(--ios-red); }
+        option { background: #1e3c72; color: white; }
+
+        button {
+            width: 100%; padding: 16px;
+            background: var(--ios-red); color: white;
+            border: none; border-radius: 15px; font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 20px rgba(255, 59, 48, 0.3);
+            margin-top: 15px;
+        }
+        button:active { transform: scale(0.96); }
+        button:disabled { background: rgba(255,255,255,0.3); cursor: not-allowed; box-shadow: none; }
+        
+        /* Hilangkan tombol KEMBALI KE HOME karena halaman ini akan dibuka di dalam Iframe panel kanan */
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>💸 Catat Pengeluaran</h2>
-    <form id="formPengeluaran">
-        <input type="date" id="tgl-biaya" required>
-        
-        <select id="kategori" required>
-            <option value="">-- Pilih Kategori --</option>
-            <option value="Sewa">Sewa (Lapak/Tenda)</option>
-            <option value="Listrik">Tagihan Listrik</option>
-            <option value="Internet">Tagihan Internet</option>
-            <option value="Gaji">Gaji Karyawan</option>
-            <option value="Bahan">Bahan (Kertas/Tinta)</option>
-            <option value="Lainnya">Lain-lain</option>
-        </select>
+<div class="container">
+    <div class="glass-card">
+        <div class="header">
+            <div style="font-size: 40px; margin-bottom: 10px;">💸</div>
+            <h2>Catat Pengeluaran</h2>
+            <p>Catat biaya operasional studio hari ini.</p>
+        </div>
 
-        <input type="text" id="keterangan" placeholder="Keterangan (misal: Beli Lakban)" required>
-        <input type="number" id="jumlah" placeholder="Jumlah (Rp)" required>
+        <form id="formPengeluaran">
+            <div class="form-group">
+                <label>Tanggal Keluar</label>
+                <input type="date" id="tgl-biaya" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Kategori Biaya</label>
+                <select id="kategori" required>
+                    <option value="">-- Pilih Kategori --</option>
+                    <option value="Sewa">Sewa (Lapak/Tenda)</option>
+                    <option value="Listrik">Tagihan Listrik</option>
+                    <option value="Internet">Tagihan Internet</option>
+                    <option value="Gaji">Gaji Karyawan</option>
+                    <option value="Bahan">Bahan (Kertas/Tinta/Frame)</option>
+                    <option value="Konsumsi">Konsumsi Tim</option>
+                    <option value="Lainnya">Lain-lain</option>
+                </select>
+            </div>
 
-        <button type="submit" id="btnSimpan">SIMPAN PENGELUARAN</button>
-    </form>
-    <button class="btn-back" onclick="window.location.href='index.html'">KEMBALI KE HOME</button>
+            <div class="form-group">
+                <label>Keterangan Detail</label>
+                <input type="text" id="keterangan" placeholder="Misal: Beli Lakban & Kopi" required>
+            </div>
+
+            <div class="form-group">
+                <label>Jumlah Nominal (Hanya Angka)</label>
+                <input type="number" id="jumlah" placeholder="50000" required>
+            </div>
+
+            <button type="submit" id="btnSimpan">SIMPAN PENGELUARAN</button>
+        </form>
+    </div>
 </div>
 
 <script>
-    const urlScript = "https://script.google.com/macros/s/AKfycbwNEt_u9QEpFaSEIlZonhkmrQngcY75_D0mIlBdGvZBYkrHMZxcxqrclb5qOX42na9PaQ/exec";
+    // =========================================================
+    // ⚠️ PASTIKAN URL INI SAMA DENGAN YANG DI FILE ADD-ON.HTML ⚠️
+    // =========================================================
+    const urlScript = "https://script.google.com/macros/s/AKfycbwPdoH2h6VZLGb_LBeIO8Fi1yBrmY8Efm2hWry_9myk6mCbSkQqi6WQOHaXxIxk43BAjQ/exec";
+
+    // Set tanggal hari ini sebagai default
+    document.getElementById('tgl-biaya').valueAsDate = new Date();
 
     document.getElementById('formPengeluaran').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnSimpan');
-        btn.innerText = "Mengirim...";
+        btn.innerText = "⏳ Mengirim...";
         btn.disabled = true;
 
-        // Format tanggal ke DD/MM/YYYY agar sesuai dengan Sheets
+        // Format tanggal ke DD/MM/YYYY
         const rawDate = document.getElementById('tgl-biaya').value.split('-');
         const tglFormatted = `${rawDate[2]}/${rawDate[1]}/${rawDate[0]}`;
 
         const data = {
-            type: "pengeluaran",
+            type: "pengeluaran", // Tipe ini yang jadi penentu di Google Sheets
             tanggal: tglFormatted,
             kategori: document.getElementById('kategori').value,
             keterangan: document.getElementById('keterangan').value,
@@ -59,14 +135,27 @@
         };
 
         try {
-            await fetch(urlScript, {
+            const response = await fetch(urlScript, {
                 method: 'POST',
+                // INI SURAT JALANNYA AGAR TIDAK DIBLOKIR ATAU NYASAR
+                headers: {
+                    "Content-Type": "text/plain;charset=utf-8"
+                },
                 body: JSON.stringify(data)
             });
-            alert("Pengeluaran berhasil dicatat!");
-            document.getElementById('formPengeluaran').reset();
+            
+            const hasil = await response.text();
+
+            if (hasil && hasil.toLowerCase().includes("sukses")) {
+                alert("✅ Pengeluaran berhasil dicatat!");
+                document.getElementById('formPengeluaran').reset();
+                document.getElementById('tgl-biaya').valueAsDate = new Date(); // Set tgl lagi setelah reset
+            } else {
+                alert("❌ Gagal menyimpan: " + hasil);
+            }
         } catch (err) {
-            alert("Gagal menyimpan data.");
+            console.error(err);
+            alert("❌ Gagal jaringan/koneksi. Cek URL Script Anda.");
         } finally {
             btn.innerText = "SIMPAN PENGELUARAN";
             btn.disabled = false;

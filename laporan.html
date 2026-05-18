@@ -61,7 +61,6 @@
         .btn-export:hover { transform: translateY(-2px); }
         .btn-export:active { transform: scale(0.95); }
 
-        /* Grid Ringkasan (6 Kotak) */
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -80,42 +79,24 @@
         .stat-box h3 { margin: 0; font-size: 12px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
         .stat-box p { margin: 10px 0 0; font-size: 22px; font-weight: 800; }
 
-        /* Area Grafik */
         .chart-container { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
         .chart-box { flex: 1; min-width: 300px; }
         .chart-box h3 { margin-top: 0; font-size: 16px; opacity: 0.9; }
 
-        /* Tabel Liquid */
         .table-wrapper { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { 
-            background: rgba(255, 255, 255, 0.1); 
-            padding: 15px; 
-            font-size: 13px; 
-            text-transform: uppercase; 
-            letter-spacing: 1px; 
-        }
-        td { 
-            padding: 15px; 
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
-            font-size: 14px; 
-        }
+        th { background: rgba(255, 255, 255, 0.1); padding: 15px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 14px; }
         tr:last-child td { border-bottom: none; }
         
         .badge { padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; }
         .cash { background: rgba(0, 122, 255, 0.2); color: #80c1ff; }
         .qris { background: rgba(52, 199, 89, 0.2); color: #85e09b; }
 
-        /* Custom warna untuk Laba/Rugi agar menonjol di kaca */
         .profit-positive { color: #85e09b !important; text-shadow: 0 0 10px rgba(52, 199, 89, 0.4); }
         .profit-negative { color: #ff8a80 !important; text-shadow: 0 0 10px rgba(255, 59, 48, 0.4); }
 
-        /* Pengunci tinggi grafik agar tidak infinite scroll */
-        .canvas-wrapper {
-            position: relative;
-            height: 300px; /* Anda bisa ubah angkanya kalau kurang tinggi */
-            width: 100%;
-        }
+        .canvas-wrapper { position: relative; height: 300px; width: 100%; }
     </style>
 </head>
 <body>
@@ -197,12 +178,47 @@
 </div>
 
 <script>
-    const urlScript = "https://script.google.com/macros/s/AKfycbwNEt_u9QEpFaSEIlZonhkmrQngcY75_D0mIlBdGvZBYkrHMZxcxqrclb5qOX42na9PaQ/exec"; 
+    const urlScript = "https://script.google.com/macros/s/AKfycbwPdoH2h6VZLGb_LBeIO8Fi1yBrmY8Efm2hWry_9myk6mCbSkQqi6WQOHaXxIxk43BAjQ/exec"; 
     let chartBatang, chartLingkaran;
 
-    // Setingan Global Chart.js agar cocok dengan tema gelap transparan
     Chart.defaults.color = 'rgba(255, 255, 255, 0.8)';
     Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+    // --- FUNGSI SMART DATE PARSER ---
+    // Membaca tanggal dari Google Sheets yang kadang formatnya aneh
+    function parseTanggal(rawDate) {
+        if (!rawDate) return null;
+        let strDate = String(rawDate).trim();
+        
+        // Jika format bawaan sistem (contoh: 2026-05-18T...)
+        if (strDate.includes('T')) {
+            const d = new Date(strDate);
+            if (!isNaN(d)) return d;
+        }
+
+        // Jika format manual teks DD/MM/YYYY atau YYYY-MM-DD
+        const parts = strDate.replace(/-/g, '/').split('/');
+        if (parts.length === 3) {
+            let year, month, day;
+            // Deteksi apakah YYYY di depan atau di belakang
+            if (parts[0].length === 4) { 
+                year = parts[0]; month = parts[1]; day = parts[2];
+            } else { 
+                day = parts[0]; month = parts[1]; year = parts[2];
+            }
+            const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            if (!isNaN(d)) return d;
+        }
+        return null;
+    }
+
+    // --- FUNGSI MEMBUAT TEKS TANGGAL RAPI UNTUK TABEL & GRAFIK (DD/MM/YYYY) ---
+    function formatTglRapi(dateObj) {
+        const d = dateObj.getDate().toString().padStart(2, '0');
+        const m = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+        const y = dateObj.getFullYear();
+        return `${d}/${m}/${y}`;
+    }
 
     async function muatLaporan() {
         try {
@@ -231,12 +247,10 @@
 
             // PROSES TRANSAKSI
             dataTransaksi.forEach(item => {
-                let tglTeks = String(item.tanggal).trim().replace(/-/g, '/');
-                const bagian = tglTeks.split('/');
+                const tglData = parseTanggal(item.tanggal);
                 
-                if (bagian.length === 3) {
-                    const tglData = new Date(parseInt(bagian[2]), parseInt(bagian[1]) - 1, parseInt(bagian[0]));
-                    tglData.setHours(12,0,0,0);
+                if (tglData) {
+                    tglData.setHours(12,0,0,0); // Amankan zona waktu
 
                     if (tglData >= dMulai && tglData <= dSelesai) {
                         const harga = parseInt(item.total) || 0;
@@ -253,12 +267,14 @@
                             dataStudio["Blue Room"]++;
                         }
 
-                        dataHarian[tglTeks] = (dataHarian[tglTeks] || 0) + harga;
+                        // Buat Teks Tanggal yang cantik
+                        const tglTeksRapi = formatTglRapi(tglData);
+                        dataHarian[tglTeksRapi] = (dataHarian[tglTeksRapi] || 0) + harga;
 
                         const metode = (item.pembayaran || "Cash").toLowerCase();
                         tableBody.innerHTML += `
                             <tr>
-                                <td style="font-size:12px; opacity:0.7;">${tglTeks}</td>
+                                <td style="font-size:12px; opacity:0.7;">${tglTeksRapi}</td>
                                 <td><strong>${item.nama}</strong></td>
                                 <td>${item.tema}</td>
                                 <td><span class="badge ${metode}">${item.pembayaran}</span></td>
@@ -271,10 +287,8 @@
 
             // PROSES PENGELUARAN
             dataPengeluaran.forEach(item => {
-                let tglTeks = String(item.tanggal).trim().replace(/-/g, '/');
-                const bagian = tglTeks.split('/');
-                if (bagian.length === 3) {
-                    const tglBiaya = new Date(parseInt(bagian[2]), parseInt(bagian[1]) - 1, parseInt(bagian[0]));
+                const tglBiaya = parseTanggal(item.tanggal);
+                if (tglBiaya) {
                     tglBiaya.setHours(12,0,0,0);
                     if (tglBiaya >= dMulai && tglBiaya <= dSelesai) {
                         pengeluaranTotal += parseInt(item.jumlah) || 0;
@@ -313,17 +327,17 @@
 
         const ctxBar = document.getElementById('chartBatang').getContext('2d');
         chartBatang = new Chart(ctxBar, {
-            type: 'line', // Diubah jadi line (garis area) agar lebih modern ala iOS
+            type: 'line', 
             data: {
                 labels: Object.keys(harian),
                 datasets: [{ 
                     label: 'Omzet', 
                     data: Object.values(harian), 
-                    backgroundColor: 'rgba(0, 122, 255, 0.2)', // iOS Blue transparan
+                    backgroundColor: 'rgba(0, 122, 255, 0.2)', 
                     borderColor: '#007AFF',
                     borderWidth: 3,
                     fill: true,
-                    tension: 0.4 // Membuat garis melengkung halus
+                    tension: 0.4 
                 }]
             },
             options: { responsive: true, maintainAspectRatio: false }
@@ -331,20 +345,19 @@
 
         const ctxPie = document.getElementById('chartLingkaran').getContext('2d');
         chartLingkaran = new Chart(ctxPie, {
-            type: 'doughnut', // Diubah dari pie jadi doughnut agar elegan
+            type: 'doughnut',
             data: {
                 labels: Object.keys(studio),
                 datasets: [{ 
                     data: Object.values(studio), 
-                    backgroundColor: ['#FF3B30', '#007AFF'], // Merah iOS & Biru iOS
-                    borderWidth: 0 // Hilangkan garis batas keras
+                    backgroundColor: ['#FF3B30', '#007AFF'],
+                    borderWidth: 0 
                 }]
             },
             options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
         });
     }
 
-    // Fungsi Ekspor CSV (Tidak berubah fungsinya)
     function eksporKeCSV() {
         let csv = "Tanggal,Nama,Tema,Metode,Total\n";
         document.querySelectorAll("#table-laporan tr").forEach(tr => {

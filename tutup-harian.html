@@ -13,25 +13,17 @@
         }
 
         body {
-            margin: 0;
-            padding: 20px;
+            margin: 0; padding: 20px;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: var(--text-main);
-            /* Background transparan karena akan dimuat di dalam iframe panel kanan */
-            background: transparent; 
+            color: var(--text-main); background: transparent; 
         }
 
         .container { max-width: 600px; margin: 0 auto; }
 
         .glass-card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 25px;
-            padding: 30px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            text-align: center;
+            background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 25px; padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2); text-align: center;
         }
 
         .header h1 { margin: 0 0 5px 0; font-size: 24px; font-weight: 800; }
@@ -41,25 +33,20 @@
         label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 10px; margin-left: 5px; opacity: 0.9; }
 
         input {
-            width: 100%; padding: 18px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 15px; color: white;
+            width: 100%; padding: 18px; background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 15px; color: white;
             font-size: 24px; font-weight: bold; text-align: center;
             box-sizing: border-box; transition: all 0.3s;
         }
         input:focus { outline: none; border-color: var(--ios-blue); background: rgba(0,0,0,0.4); }
 
         button {
-            width: 100%; padding: 16px;
-            background: var(--ios-blue); color: white;
+            width: 100%; padding: 16px; background: var(--ios-blue); color: white;
             border: none; border-radius: 15px; font-size: 16px; font-weight: 600;
             cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
         }
         button:active { transform: scale(0.96); }
-        .btn-reset { background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); box-shadow: none; margin-top: 10px; }
 
-        /* AREA HASIL */
         #area-hasil { display: none; animation: fadeIn 0.5s forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -68,17 +55,13 @@
         .stat-box h3 { margin: 0 0 5px 0; font-size: 11px; opacity: 0.7; text-transform: uppercase; }
         .stat-box p { margin: 0; font-size: 18px; font-weight: 700; }
 
-        .selisih-box {
-            padding: 20px; border-radius: 15px; margin: 20px 0; border: 2px dashed rgba(255,255,255,0.3);
-        }
+        .selisih-box { padding: 20px; border-radius: 15px; margin: 20px 0; border: 2px dashed rgba(255,255,255,0.3); }
         .selisih-box h2 { margin: 0 0 5px 0; font-size: 16px; text-transform: uppercase; }
         .selisih-box p { margin: 0; font-size: 32px; font-weight: 800; }
 
-        /* Status Colors */
         .kurang { background: rgba(255, 59, 48, 0.15); color: #ff8a80; border-color: rgba(255, 59, 48, 0.5); }
         .lebih { background: rgba(52, 199, 89, 0.15); color: #85e09b; border-color: rgba(52, 199, 89, 0.5); }
         .pas { background: rgba(0, 122, 255, 0.15); color: #80c1ff; border-color: rgba(0, 122, 255, 0.5); }
-
     </style>
 </head>
 <body>
@@ -97,11 +80,10 @@
                 <input type="number" id="uang-fisik" placeholder="0" required>
             </div>
             <button onclick="prosesTutupHarian()" id="btn-proses">Hitung Rekap Harian</button>
-            <p style="font-size: 12px; opacity: 0.6; margin-top: 15px;">*Pastikan hitung uang fisik dengan teliti sebelum klik Lanjut.</p>
+            <p style="font-size: 12px; opacity: 0.6; margin-top: 15px;">*Data akan ditarik langsung (Live) dari server.</p>
         </div>
 
         <div id="area-hasil">
-            
             <div class="summary-grid">
                 <div class="stat-box">
                     <h3>Pemasukan Cash</h3>
@@ -136,59 +118,119 @@
                 <h2 id="label-selisih">STATUS BALANCE</h2>
                 <p id="angka-selisih">Rp 0</p>
             </div>
-
-            <button onclick="lokasiReset()" class="btn-reset">Hitung Ulang</button>
         </div>
     </div>
 </div>
 
-<<script>
-    // GANTI DENGAN URL DEPLOYMENT TERBARU ANDA
-    const urlScript = "https://script.google.com/macros/s/AKfycbwNEt_u9QEpFaSEIlZonhkmrQngcY75_D0mIlBdGvZBYkrHMZxcxqrclb5qOX42na9PaQ/exec";
+<script>
+    // URL Deployment Web App Apps Script Anda
+    const urlScript = "https://script.google.com/macros/s/AKfycbwPdoH2h6VZLGb_LBeIO8Fi1yBrmY8Efm2hWry_9myk6mCbSkQqi6WQOHaXxIxk43BAjQ/exec";
 
     const d = new Date();
-    // Gunakan format ISO lengkap agar bisa melacak jam kasir tutup
-    const tglHariIni = d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes();
-    document.getElementById('tgl-hari-ini').innerText = "Hari Ini: " + d.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    
+    // TANGGAL TARGET UNTUK FILTER (Format mutlak: DD/MM/YYYY)
+    const tglTarget = d.getDate().toString().padStart(2, '0') + "/" + 
+                      (d.getMonth() + 1).toString().padStart(2, '0') + "/" + 
+                      d.getFullYear();
+
+    const waktuLengkap = tglTarget + " " + d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0');
+                       
+    document.getElementById('tgl-hari-ini').innerText = "Tanggal: " + tglTarget;
+
+    // --- 1. FUNGSI PEMBERSIH ANGKA (Anti "Rp" atau titik/koma di Google Sheets) ---
+    function bersihkanAngka(val) {
+        if (!val) return 0;
+        // Hapus semua karakter yang BUKAN angka
+        const angkaBersih = String(val).replace(/[^0-9]/g, '');
+        return parseInt(angkaBersih) || 0;
+    }
+
+    // --- 2. FUNGSI PENGUBAH TANGGAL SUPER KETAT (Konversi semua format ke DD/MM/YYYY) ---
+    function formatKeDDMMYYYY(rawDate) {
+        if (!rawDate) return "";
+        let str = String(rawDate).trim();
+        
+        // Jika format dari sistem Google (mengandung huruf 'T')
+        if (str.includes('T')) {
+            const dateObj = new Date(str);
+            if (!isNaN(dateObj)) {
+                return dateObj.getDate().toString().padStart(2,'0') + '/' + 
+                       (dateObj.getMonth()+1).toString().padStart(2,'0') + '/' + 
+                       dateObj.getFullYear();
+            }
+        }
+
+        // Jika format manual teks biasa (mengandung garis miring atau strip)
+        const parts = str.replace(/-/g, '/').split('/');
+        if (parts.length >= 3) {
+            let year = parts[2].split(' ')[0]; // Buang jam jika ada
+            let month = parts[1];
+            let day = parts[0].split(' ')[0]; 
+
+            // Jika tahun ditulis di depan (YYYY/MM/DD)
+            if (parts[0].length === 4) { 
+                year = parts[0]; 
+                day = parts[2].split(' ')[0]; 
+            }
+            return day.padStart(2,'0') + '/' + month.padStart(2,'0') + '/' + year;
+        }
+        
+        return str.split(' ')[0]; // Pasrah pakai teks aslinya jika format aneh
+    }
 
     async function prosesTutupHarian() {
         const inputFisik = document.getElementById('uang-fisik').value;
         const btn = document.getElementById('btn-proses');
 
         if (!inputFisik || inputFisik === "") {
-            alert("Masukkan total uang fisik di laci dulu!");
+            alert("⚠️ Masukkan total uang fisik di laci dulu!");
             return;
         }
 
         if(!confirm("PERINGATAN: Data tidak bisa diubah setelah diproses. Pastikan uang fisik sudah benar. Lanjutkan?")) return;
 
-        btn.innerText = "Merekam ke server...";
+        btn.innerText = "⏳ Sedang Menarik Data Live...";
         btn.disabled = true;
 
         try {
-            // 1. Ambil Data Server
-            const res = await fetch(urlScript);
+            // --- Trik Anti-Cache Browser: Tambahkan Waktu Detik Ini di URL ---
+            const urlAntiCache = urlScript + "?v=" + new Date().getTime();
+            const res = await fetch(urlAntiCache);
             const resJson = await res.json();
             
             const dataTransaksi = resJson.transaksi || [];
             const dataPengeluaran = resJson.pengeluaran || [];
 
             let totalOmzet = 0, totalCash = 0, totalQris = 0, totalPengeluaran = 0;
-            const tglFilter = d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear(); // Filter tanpa jam
 
-            // Kalkulasi
+            // 3. Kalkulasi Transaksi Hari Ini
             dataTransaksi.forEach(item => {
-                const tglData = String(item.tanggal || item.Tanggal).trim().split(' ')[0]; // Ambil tanggalnya saja
-                if (tglData === tglFilter && String(item.status).trim().toLowerCase() === "selesai") {
-                    const harga = parseInt(item.total) || 0;
+                const tglDataBersih = formatKeDDMMYYYY(item.tanggal || item.Tanggal);
+                
+                // Jika tanggal di baris ini sama persis dengan tanggal hari ini
+                if (tglDataBersih === tglTarget) {
+                    
+                    // Kita bebaskan statusnya (tidak hanya 'selesai'), pokoknya kalau ada harga, kita hitung!
+                    const harga = bersihkanAngka(item.total || item.Total);
+                    const metode = item.pembayaran ? String(item.pembayaran).trim().toUpperCase() : "";
+
                     totalOmzet += harga;
-                    String(item.pembayaran).trim().toUpperCase() === "CASH" ? totalCash += harga : totalQris += harga;
+                    
+                    // Deteksi kata CASH atau TUNAI
+                    if (metode.includes("CASH") || metode.includes("TUNAI")) {
+                        totalCash += harga;
+                    } else {
+                        totalQris += harga; // Sisanya dianggap QRIS/Transfer
+                    }
                 }
             });
 
+            // 4. Kalkulasi Pengeluaran Hari Ini
             dataPengeluaran.forEach(item => {
-                if (String(item.tanggal).trim().split(' ')[0] === tglFilter) {
-                    totalPengeluaran += parseInt(item.jumlah) || 0;
+                const tglBiayaBersih = formatKeDDMMYYYY(item.tanggal || item.Tanggal);
+                
+                if (tglBiayaBersih === tglTarget) {
+                    totalPengeluaran += bersihkanAngka(item.jumlah || item.Jumlah);
                 }
             });
 
@@ -196,18 +238,27 @@
             const uangFisikKasir = parseInt(inputFisik);
             const selisih = uangFisikKasir - uangSeharusnya;
 
-            // 2. REKAM KE SERVER (ANTI-KECURANGAN)
+            // 5. REKAM KE SERVER
             const payload = {
                 type: "tutup_harian",
-                tanggal: tglHariIni, // Mengirimkan beserta jam closing
+                tanggal: waktuLengkap,
                 fisik: uangFisikKasir,
                 sistem: uangSeharusnya,
                 selisih: selisih
             };
 
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify(payload) });
+            const responsePOST = await fetch(urlScript, { 
+                method: 'POST', 
+                headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                body: JSON.stringify(payload) 
+            });
 
-            // 3. Update UI Hasil
+            const hasilPOST = await responsePOST.text();
+            if (!hasilPOST.toLowerCase().includes("sukses")) {
+                console.warn("Server Error: " + hasilPOST);
+            }
+
+            // 6. TAMPILKAN HASIL
             document.getElementById('res-omzet').innerText = "Rp " + totalOmzet.toLocaleString('id-ID');
             document.getElementById('res-cash').innerText = "Rp " + totalCash.toLocaleString('id-ID');
             document.getElementById('res-qris').innerText = "Rp " + totalQris.toLocaleString('id-ID');
@@ -220,15 +271,17 @@
             document.getElementById('label-selisih').innerText = selisih < 0 ? "SELISIH KURANG (MINUS)" : selisih > 0 ? "SELISIH LEBIH (SURPLUS)" : "BALANCE (SESUAI)";
             document.getElementById('angka-selisih').innerText = (selisih > 0 ? "+ " : "") + "Rp " + selisih.toLocaleString('id-ID');
 
-            // Transisi & Kunci UI
             document.getElementById('area-input').style.display = 'none';
             document.getElementById('area-hasil').style.display = 'block';
 
         } catch (e) {
-            alert("Gagal koneksi ke server, coba lagi!");
+            console.error(e);
+            alert("❌ Gagal menarik data dari server. Cek koneksi Anda!");
             btn.innerText = "Hitung Rekap Harian";
             btn.disabled = false;
         }
     }
-    // Fungsi lokasiReset() DIHAPUS TOTAL. Kasir tidak bisa putar balik.
 </script>
+
+</body>
+</html>
