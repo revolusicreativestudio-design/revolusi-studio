@@ -104,24 +104,57 @@
 </div>
 
 <script>
-    // URL DEPLOYMENT TERBARU ANDA (Pastikan URL-nya sudah yang paling update)
+    // URL DEPLOYMENT TERBARU ANDA
     const urlScript = "https://script.google.com/macros/s/AKfycbwPdoH2h6VZLGb_LBeIO8Fi1yBrmY8Efm2hWry_9myk6mCbSkQqi6WQOHaXxIxk43BAjQ/exec";
     let dataSeluruhnya = []; 
 
     // --- FUNGSI FORMAT NOMOR WA ---
-    // Mengubah format 08... menjadi 628... dan membuang strip/spasi
     function formatNomorWA(nomor) {
         if (!nomor) return "";
-        let noBersih = String(nomor).replace(/[^0-9]/g, ''); // Hapus semua kecuali angka
+        let noBersih = String(nomor).replace(/[^0-9]/g, '');
         if (noBersih.startsWith('0')) {
             noBersih = '62' + noBersih.substring(1);
         }
         return noBersih;
     }
 
+    // --- FUNGSI SMART DATE PARSER (Identik dengan mesin Laporan.html) ---
+    function parseTanggal(rawDate) {
+        if (!rawDate) return null;
+        let strDate = String(rawDate).trim();
+        
+        // Jika format otomatis Google (contoh: 2026-05-18T...)
+        if (strDate.includes('T')) {
+            const d = new Date(strDate);
+            if (!isNaN(d)) return d;
+        }
+
+        // Jika format manual
+        const parts = strDate.replace(/-/g, '/').split('/');
+        if (parts.length === 3) {
+            let year, month, day;
+            if (parts[0].length === 4) { 
+                year = parts[0]; month = parts[1]; day = parts[2];
+            } else { 
+                day = parts[0]; month = parts[1]; year = parts[2];
+            }
+            const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            if (!isNaN(d)) return d;
+        }
+        return null;
+    }
+
+    // --- FUNGSI TAMPILAN TANGGAL RAPI ---
+    function formatTglRapi(dateObj) {
+        const d = dateObj.getDate().toString().padStart(2, '0');
+        const m = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+        const y = dateObj.getFullYear();
+        return `${d}/${m}/${y}`;
+    }
+
     async function ambilDataDariSheet() {
         try {
-            // Paksa anti-cache agar data selalu real-time
+            // Paksa anti-cache
             const urlAntiCache = urlScript + "?v=" + new Date().getTime();
             const response = await fetch(urlAntiCache);
             const resJson = await response.json();
@@ -129,13 +162,26 @@
             
             const tableBody = document.getElementById('table-admin');
             const d = new Date();
-            const tglHariIni = d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
+            
+            // Buat batasan waktu "Hari Ini" dari 00:00 s/d 23:59
+            const batasAwal = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
+            const batasAkhir = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
+                              
             document.getElementById('tgl-skrg').innerText = "Hari ini: " + d.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-            // Filter data khusus hari ini saja
-            const dataHariIni = dataSeluruhnya.filter(item => {
-                const tglData = String(item.tanggal || item.Tanggal).trim().split(' ')[0];
-                return tglData === tglHariIni;
+            // Filter data menggunakan perbandingan Waktu (Bukan Teks)
+            const dataHariIni = [];
+            dataSeluruhnya.forEach(item => {
+                const tglData = parseTanggal(item.tanggal || item.Tanggal);
+                if (tglData) {
+                    tglData.setHours(12, 0, 0, 0); // Amankan dari perbedaan zona waktu
+                    
+                    // Jika tanggal masuk dalam rentang hari ini
+                    if (tglData >= batasAwal && tglData <= batasAkhir) {
+                        item.tglDisplay = formatTglRapi(tglData); // Simpan tanggal rapi untuk ditampilkan
+                        dataHariIni.push(item);
+                    }
+                }
             });
             
             tableBody.innerHTML = "";
@@ -150,14 +196,12 @@
                 const status = String(statusRaw).trim();
                 const barisAsli = dataSeluruhnya.indexOf(item) + 2;
                 
-                // Siapkan Tombol WhatsApp
                 const nomorAsli = item.wa || item.WA || "";
                 const noWA = formatNomorWA(nomorAsli);
                 const namaPelanggan = item.nama || item.Nama || "Kak";
                 
                 let tombolWA = "";
-                if (noWA.length > 8) { // Cek jika nomornya valid (lebih dari 8 angka)
-                    // Template Pesan yang akan otomatis terketik di HP Anda
+                if (noWA.length > 8) { 
                     const pesanTeks = `Halo ${namaPelanggan},\nTerima kasih sudah berfoto di Revolusi Studio! 📸\n\nBerikut adalah link Google Drive untuk mengunduh soft file foto kakak:\n[Paste Link Drive Di Sini]\n\nJangan lupa tag IG kami ya kak! ✨`;
                     const pesanEncoded = encodeURIComponent(pesanTeks);
                     
@@ -174,7 +218,7 @@
                         <button class="btn-action btn-batal" onclick="updateStatus(${barisAsli}, 'Batal')">Batal</button>
                     `;
                 } else {
-                    rowOpacity = "0.8"; // Opacity dinaikkan sedikit agar tombol WA tetap enak dilihat
+                    rowOpacity = "0.8"; 
                     const color = status.toLowerCase() === "selesai" ? "#34C759" : "#FF3B30";
                     actionContent = `
                         ${tombolWA}
@@ -184,7 +228,7 @@
 
                 tableBody.innerHTML += `
                     <tr style="opacity: ${rowOpacity}">
-                        <td style="font-size: 12px; opacity: 0.6;">${item.tanggal || item.Tanggal}</td>
+                        <td style="font-size: 12px; opacity: 0.6;">${item.tglDisplay}</td>
                         <td><strong>${namaPelanggan}</strong><br><small style="color: #85e09b;">${nomorAsli}</small></td>
                         <td><span style="font-size:13px;">${item.tema || item.Tema}</span></td>
                         <td style="font-weight: 600;">${status}</td>
@@ -217,7 +261,7 @@
             const hasil = await resp.text();
             
             if (hasil.includes("Sukses")) {
-                ambilDataDariSheet(); // Refresh tabel
+                ambilDataDariSheet(); 
             } else {
                 alert("Gagal update di Sheets: " + hasil);
             }
@@ -230,9 +274,5 @@
     }
 
     ambilDataDariSheet();
-    // Auto-refresh setiap 30 detik
     setInterval(ambilDataDariSheet, 30000);
 </script>
-
-</body>
-</html>
