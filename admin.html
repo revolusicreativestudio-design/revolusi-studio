@@ -6,18 +6,13 @@
     <title>Admin Panel - Revolusi Studio</title>
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.25);
-            --ios-blue: #007AFF;
-            --ios-green: #34C759;
-            --ios-red: #FF3B30;
-            --wa-green: #25D366; /* Warna Khas WhatsApp */
+            --glass: rgba(255, 255, 255, 0.15); --glass-border: rgba(255, 255, 255, 0.25);
+            --ios-blue: #007AFF; --ios-green: #34C759; --ios-red: #FF3B30; --wa-green: #25D366;
             --text-main: #ffffff;
         }
 
         body {
-            margin: 0; padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-image: url('https://images.unsplash.com/photo-1614851099511-773084f6911d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
             background-size: cover; background-position: center; background-attachment: fixed;
             display: flex; justify-content: center; align-items: flex-start;
@@ -27,9 +22,10 @@
         .admin-container { width: 100%; max-width: 900px; padding: 0 20px; box-sizing: border-box; }
 
         .header-glass {
-            background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border); border-radius: 25px; padding: 20px 30px; margin-bottom: 20px;
+            background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
+            border-radius: 25px; padding: 20px 30px; margin-bottom: 20px;
             display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            flex-wrap: wrap; gap: 10px;
         }
 
         h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
@@ -40,35 +36,31 @@
         }
         .btn-refresh:hover { background: rgba(255, 255, 255, 0.3); }
 
+        .btn-xray { background: rgba(255, 59, 48, 0.2); border-color: rgba(255, 59, 48, 0.5); }
+        .btn-xray:hover { background: rgba(255, 59, 48, 0.4); }
+
         .table-container {
-            background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border); border-radius: 25px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
+            border-radius: 25px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
 
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background: rgba(255, 255, 255, 0.1); padding: 18px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; opacity: 0.8; }
+        th { background: rgba(255, 255, 255, 0.1); padding: 18px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
         td { padding: 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 15px; }
         tr:last-child td { border-bottom: none; }
 
-        /* Tombol Aksi Liquid */
         .btn-action {
-            display: inline-block; padding: 8px 14px; border: none; border-radius: 10px;
-            font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; margin-right: 5px; margin-bottom: 5px;
-            text-decoration: none; text-align: center;
+            display: inline-block; padding: 8px 14px; border: none; border-radius: 10px; font-weight: 600; font-size: 13px;
+            cursor: pointer; transition: 0.2s; margin-right: 5px; margin-bottom: 5px; text-decoration: none; text-align: center;
         }
-        .btn-action:active { transform: scale(0.95); }
-
         .btn-selesai { background: var(--ios-green); color: white; }
         .btn-batal { background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid var(--glass-border); }
         .btn-wa { background: var(--wa-green); color: white; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); }
         .btn-wa:hover { background: #1ebd5a; }
-
         .status-badge { padding: 6px 12px; border-radius: 10px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 5px; }
 
         @media (max-width: 600px) {
-            body { padding-top: 10px; }
             th:nth-child(1), td:nth-child(1) { display: none; } 
-            .header-glass { padding: 15px; }
         }
     </style>
 </head>
@@ -80,14 +72,17 @@
             <h1>Admin Panel</h1>
             <span id="tgl-skrg" style="font-size: 12px; opacity: 0.7;">Memuat tanggal...</span>
         </div>
-        <button class="btn-refresh" onclick="ambilDataDariSheet()">🔄 Segarkan</button>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-refresh btn-xray" id="btn-toggle" onclick="toggleMode()">📂 Tampilkan Semua Data</button>
+            <button class="btn-refresh" onclick="ambilDataDariSheet()">🔄 Segarkan</button>
+        </div>
     </div>
 
     <div class="table-container">
         <table>
             <thead>
                 <tr>
-                    <th>Waktu</th>
+                    <th>Waktu (Asli Server)</th>
                     <th>Nama Pelanggan</th>
                     <th>Studio</th>
                     <th>Status</th>
@@ -95,184 +90,168 @@
                 </tr>
             </thead>
             <tbody id="table-admin">
-                <tr>
-                    <td colspan="5" style="text-align:center;">Menghubungkan ke server...</td>
-                </tr>
+                <tr><td colspan="5" style="text-align:center;">Menghubungkan ke server...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // URL DEPLOYMENT TERBARU ANDA
     const urlScript = "https://script.google.com/macros/s/AKfycbwPdoH2h6VZLGb_LBeIO8Fi1yBrmY8Efm2hWry_9myk6mCbSkQqi6WQOHaXxIxk43BAjQ/exec";
     let dataSeluruhnya = []; 
+    let tampilkanSemua = false; // Mode Toggle
 
-    // --- FUNGSI FORMAT NOMOR WA ---
     function formatNomorWA(nomor) {
         if (!nomor) return "";
         let noBersih = String(nomor).replace(/[^0-9]/g, '');
-        if (noBersih.startsWith('0')) {
-            noBersih = '62' + noBersih.substring(1);
-        }
+        if (noBersih.startsWith('0')) noBersih = '62' + noBersih.substring(1);
         return noBersih;
     }
 
-    // --- FUNGSI SMART DATE PARSER (Identik dengan mesin Laporan.html) ---
     function parseTanggal(rawDate) {
         if (!rawDate) return null;
         let strDate = String(rawDate).trim();
-        
-        // Jika format otomatis Google (contoh: 2026-05-18T...)
         if (strDate.includes('T')) {
             const d = new Date(strDate);
             if (!isNaN(d)) return d;
         }
-
-        // Jika format manual
         const parts = strDate.replace(/-/g, '/').split('/');
-        if (parts.length === 3) {
-            let year, month, day;
-            if (parts[0].length === 4) { 
-                year = parts[0]; month = parts[1]; day = parts[2];
-            } else { 
-                day = parts[0]; month = parts[1]; year = parts[2];
-            }
+        if (parts.length >= 3) {
+            let year = parts[2].split(' ')[0], month = parts[1], day = parts[0].split(' ')[0];
+            if (parts[0].length === 4) { year = parts[0]; day = parts[2].split(' ')[0]; }
             const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
             if (!isNaN(d)) return d;
         }
         return null;
     }
 
-    // --- FUNGSI TAMPILAN TANGGAL RAPI ---
-    function formatTglRapi(dateObj) {
-        const d = dateObj.getDate().toString().padStart(2, '0');
-        const m = (dateObj.getMonth() + 1).toString().padStart(2, '0');
-        const y = dateObj.getFullYear();
-        return `${d}/${m}/${y}`;
+    function toggleMode() {
+        tampilkanSemua = !tampilkanSemua;
+        document.getElementById('btn-toggle').innerText = tampilkanSemua ? "📅 Filter Hari Ini Saja" : "📂 Tampilkan Semua Data";
+        renderTabel(); // Render ulang tanpa fetch
     }
 
     async function ambilDataDariSheet() {
         try {
-            // Paksa anti-cache
             const urlAntiCache = urlScript + "?v=" + new Date().getTime();
             const response = await fetch(urlAntiCache);
             const resJson = await response.json();
+            
+            // Log ke konsol browser untuk Anda bisa cek
+            console.log("Data Mentah dari Server:", resJson);
+            
             dataSeluruhnya = resJson.transaksi || [];
             
-            const tableBody = document.getElementById('table-admin');
             const d = new Date();
-            
-            // Buat batasan waktu "Hari Ini" dari 00:00 s/d 23:59
-            const batasAwal = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
-            const batasAkhir = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
-                              
             document.getElementById('tgl-skrg').innerText = "Hari ini: " + d.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            renderTabel();
+        } catch (error) {
+            console.error(error);
+            document.getElementById('table-admin').innerHTML = "<tr><td colspan='5' style='color:#ff8a80; text-align:center;'>Gagal sinkronisasi. Cek URL Script atau Internet.</td></tr>";
+        }
+    }
 
-            // Filter data menggunakan perbandingan Waktu (Bukan Teks)
-            const dataHariIni = [];
+    function renderTabel() {
+        const tableBody = document.getElementById('table-admin');
+        const d = new Date();
+        const batasAwal = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
+        const batasAkhir = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
+
+        let dataYangDitampilkan = [];
+
+        if (tampilkanSemua) {
+            // Ambil semua data (maksimal 50 baris terakhir agar tidak berat)
+            dataYangDitampilkan = [...dataSeluruhnya].slice(-50);
+        } else {
+            // Filter hanya hari ini, dengan mencari nilai tanggal di kolom manapun jika "tanggal" kosong
             dataSeluruhnya.forEach(item => {
-                const tglData = parseTanggal(item.tanggal || item.Tanggal);
+                // Trik: Coba ambil dari properti 'tanggal', 'Tanggal', 'waktu', atau kolom pertama (Object.values(item)[0])
+                const rawDate = item.tanggal || item.Tanggal || item.waktu || item.Waktu || item.timestamp || Object.values(item)[0];
+                const tglData = parseTanggal(rawDate);
+                
                 if (tglData) {
-                    tglData.setHours(12, 0, 0, 0); // Amankan dari perbedaan zona waktu
-                    
-                    // Jika tanggal masuk dalam rentang hari ini
+                    tglData.setHours(12, 0, 0, 0);
                     if (tglData >= batasAwal && tglData <= batasAkhir) {
-                        item.tglDisplay = formatTglRapi(tglData); // Simpan tanggal rapi untuk ditampilkan
-                        dataHariIni.push(item);
+                        item._rawDateDisplay = rawDate; // Simpan teks asli untuk diintip
+                        dataYangDitampilkan.push(item);
                     }
                 }
             });
-            
-            tableBody.innerHTML = "";
+        }
 
-            if (dataHariIni.length === 0) {
-                tableBody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:40px; opacity:0.6;'>Belum ada pendaftaran hari ini.</td></tr>";
-                return;
+        tableBody.innerHTML = "";
+
+        if (dataYangDitampilkan.length === 0) {
+            const pesan = tampilkanSemua ? "Data di Google Sheets KOSONG!" : "Belum ada pendaftaran HARI INI (Atau format tanggal di Sheets salah).";
+            tableBody.innerHTML = `<tr><td colspan='5' style='text-align:center; padding:40px; opacity:0.8;'>${pesan}</td></tr>`;
+            return;
+        }
+
+        dataYangDitampilkan.reverse().forEach((item) => {
+            const statusRaw = item.status || item.Status || "";
+            const status = String(statusRaw).trim();
+            const barisAsli = dataSeluruhnya.indexOf(item) + 2;
+            
+            // Ambil nama dan WA dengan pertahanan maksimal (jaga-jaga nama kolom huruf besar)
+            const nomorAsli = item.wa || item.WA || item.WhatsApp || "";
+            const noWA = formatNomorWA(nomorAsli);
+            const namaPelanggan = item.nama || item.Nama || "Pelanggan";
+            const temaStudio = item.tema || item.Tema || "-";
+            
+            // Tampilkan teks tanggal asli yang dikirim server
+            const waktuTampil = item._rawDateDisplay || item.tanggal || item.Tanggal || Object.values(item)[0] || "Kosong";
+
+            let tombolWA = "";
+            if (noWA.length > 8) { 
+                const pesanEncoded = encodeURIComponent(`Halo ${namaPelanggan},\nTerima kasih sudah berfoto di Revolusi Studio! 📸\nBerikut link Google Drive kakak:\n\n[Paste Link Di Sini]`);
+                tombolWA = `<a href="https://wa.me/${noWA}?text=${pesanEncoded}" target="_blank" class="btn-action btn-wa">💬 Chat WA</a>`;
             }
 
-            dataHariIni.reverse().forEach((item) => {
-                const statusRaw = item.status || item.Status || "";
-                const status = String(statusRaw).trim();
-                const barisAsli = dataSeluruhnya.indexOf(item) + 2;
-                
-                const nomorAsli = item.wa || item.WA || "";
-                const noWA = formatNomorWA(nomorAsli);
-                const namaPelanggan = item.nama || item.Nama || "Kak";
-                
-                let tombolWA = "";
-                if (noWA.length > 8) { 
-                    const pesanTeks = `Halo ${namaPelanggan},\nTerima kasih sudah berfoto di Revolusi Studio! 📸\n\nBerikut adalah link Google Drive untuk mengunduh soft file foto kakak:\n[Paste Link Drive Di Sini]\n\nJangan lupa tag IG kami ya kak! ✨`;
-                    const pesanEncoded = encodeURIComponent(pesanTeks);
-                    
-                    tombolWA = `<a href="https://wa.me/${noWA}?text=${pesanEncoded}" target="_blank" class="btn-action btn-wa">💬 Chat WA</a>`;
-                }
+            let actionContent = "";
+            let rowOpacity = "1";
 
-                let actionContent = "";
-                let rowOpacity = "1";
-
-                if (status.toLowerCase() === "menunggu" || status === "") {
-                    actionContent = `
-                        ${tombolWA}
-                        <button class="btn-action btn-selesai" onclick="updateStatus(${barisAsli}, 'Selesai')">Selesai</button>
-                        <button class="btn-action btn-batal" onclick="updateStatus(${barisAsli}, 'Batal')">Batal</button>
-                    `;
-                } else {
-                    rowOpacity = "0.8"; 
-                    const color = status.toLowerCase() === "selesai" ? "#34C759" : "#FF3B30";
-                    actionContent = `
-                        ${tombolWA}
-                        <span class="status-badge" style="background:${color}22; color:${color}">${status}</span>
-                    `;
-                }
-
-                tableBody.innerHTML += `
-                    <tr style="opacity: ${rowOpacity}">
-                        <td style="font-size: 12px; opacity: 0.6;">${item.tglDisplay}</td>
-                        <td><strong>${namaPelanggan}</strong><br><small style="color: #85e09b;">${nomorAsli}</small></td>
-                        <td><span style="font-size:13px;">${item.tema || item.Tema}</span></td>
-                        <td style="font-weight: 600;">${status}</td>
-                        <td>${actionContent}</td>
-                    </tr>
+            if (status.toLowerCase() === "menunggu" || status === "") {
+                actionContent = `
+                    ${tombolWA}
+                    <button class="btn-action btn-selesai" onclick="updateStatus(${barisAsli}, 'Selesai')">Selesai</button>
+                    <button class="btn-action btn-batal" onclick="updateStatus(${barisAsli}, 'Batal')">Batal</button>
                 `;
-            });
-        } catch (error) {
-            console.error(error);
-            document.getElementById('table-admin').innerHTML = "<tr><td colspan='5' style='color:#ff8a80; text-align:center;'>Gagal sinkronisasi data dengan server.</td></tr>";
-        }
+            } else {
+                rowOpacity = "0.8"; 
+                const color = status.toLowerCase() === "selesai" ? "#34C759" : "#FF3B30";
+                actionContent = `${tombolWA} <span class="status-badge" style="background:${color}22; color:${color}">${status}</span>`;
+            }
+
+            tableBody.innerHTML += `
+                <tr style="opacity: ${rowOpacity}">
+                    <td style="font-size: 11px; opacity: 0.6;">${waktuTampil}</td>
+                    <td><strong>${namaPelanggan}</strong><br><small style="color: #85e09b;">${nomorAsli}</small></td>
+                    <td><span style="font-size:13px;">${temaStudio}</span></td>
+                    <td style="font-weight: 600;">${status}</td>
+                    <td>${actionContent}</td>
+                </tr>
+            `;
+        });
     }
 
     async function updateStatus(nomorBaris, statusBaru) {
         if (!confirm("Ubah status menjadi " + statusBaru + "?")) return;
-        
         const btn = event.target;
         const teksAsli = btn.innerText;
-        btn.innerText = "...";
-        btn.disabled = true;
-
-        const payload = {
-            type: "update",
-            index: nomorBaris,
-            status: statusBaru
-        };
+        btn.innerText = "..."; btn.disabled = true;
 
         try {
-            const resp = await fetch(urlScript, { method: 'POST', body: JSON.stringify(payload) });
-            const hasil = await resp.text();
-            
-            if (hasil.includes("Sukses")) {
-                ambilDataDariSheet(); 
-            } else {
-                alert("Gagal update di Sheets: " + hasil);
-            }
-        } catch (e) {
-            alert("Terjadi kesalahan koneksi!");
-        } finally {
-            btn.innerText = teksAsli;
-            btn.disabled = false;
-        }
+            const resp = await fetch(urlScript, { method: 'POST', body: JSON.stringify({ type: "update", index: nomorBaris, status: statusBaru }) });
+            if ((await resp.text()).includes("Sukses")) ambilDataDariSheet();
+            else alert("Gagal update!");
+        } catch (e) { alert("Kesalahan koneksi!"); }
+        finally { btn.innerText = teksAsli; btn.disabled = false; }
     }
 
     ambilDataDariSheet();
-    setInterval(ambilDataDariSheet, 30000);
+    setInterval(ambilDataDariSheet, 30000); // Refresh otomatis 30 detik
 </script>
+
+</body>
+</html>
