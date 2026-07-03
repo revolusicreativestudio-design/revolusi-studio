@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Revolusi Studio Supabase</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+    <title>Admin Panel - Revolusi Studio</title>
     <style>
         :root {
             --glass: rgba(255, 255, 255, 0.15); --glass-border: rgba(255, 255, 255, 0.25);
@@ -16,7 +13,7 @@
 
         body {
             margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-image: url('https://images.unsplash.com/photo-1614851099511-773084f6911d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-image: url('https://images.unsplash.com/photo-1647346425804-34383b95644b?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
             background-size: cover; background-position: center; background-attachment: fixed;
             display: flex; justify-content: center; align-items: flex-start;
             min-height: 100vh; color: var(--text-main); padding-top: 20px;
@@ -49,7 +46,7 @@
 
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { background: rgba(255, 255, 255, 0.1); padding: 18px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
-        td { padding: 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 15px; }
+        td { padding: 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 15px; }
         tr:last-child td { border-bottom: none; }
 
         .btn-action {
@@ -72,12 +69,12 @@
 <div class="admin-container">
     <div class="header-glass">
         <div>
-            <h1>Admin Panel (Supabase)</h1>
+            <h1>Admin Panel</h1>
             <span id="tgl-skrg" style="font-size: 12px; opacity: 0.7;">Memuat tanggal...</span>
         </div>
         <div style="display: flex; gap: 10px;">
             <button class="btn-refresh btn-xray" id="btn-toggle" onclick="toggleMode()">📂 Tampilkan Semua Data</button>
-            <button class="btn-refresh" onclick="ambilDataDariSupabase()">🔄 Segarkan</button>
+            <button class="btn-refresh" onclick="ambilDataDariSheet()">🔄 Segarkan</button>
         </div>
     </div>
 
@@ -85,7 +82,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>Waktu</th>
+                    <th>Waktu (Asli Server)</th>
                     <th>Nama Pelanggan</th>
                     <th>Studio</th>
                     <th>Status</th>
@@ -93,19 +90,16 @@
                 </tr>
             </thead>
             <tbody id="table-admin">
-                <tr><td colspan="5" style="text-align:center;">Menghubungkan ke database kilat Supabase...</td></tr>
+                <tr><td colspan="5" style="text-align:center;">Menghubungkan ke server...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // --- KUNCI SUPABASE REVOLUSI STUDIO (SUDAH DIINJEKSI OTOMATIS) ---
-    const supabaseUrl = 'https://jxlpoqjfblnjxcfbnkjf.supabase.co'; 
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4bHBvcWpmYmxuanhjZmJua2pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODI0NzYsImV4cCI6MjA5ODY1ODQ3Nn0.iJpxBgGtnjYNui7YdoLnrvfiL20pdGb2mLdUUvaGqJU'; 
-    
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-    let tampilkanSemua = false; 
+    const urlScript = "https://script.google.com/macros/s/AKfycbwPdoH2h6VZLGb_LBeIO8Fi1yBrmY8Efm2hWry_9myk6mCbSkQqi6WQOHaXxIxk43BAjQ/exec";
+    let dataSeluruhnya = []; 
+    let tampilkanSemua = false; // Mode Toggle
 
     function formatNomorWA(nomor) {
         if (!nomor) return "";
@@ -114,121 +108,149 @@
         return noBersih;
     }
 
+    function parseTanggal(rawDate) {
+        if (!rawDate) return null;
+        let strDate = String(rawDate).trim();
+        if (strDate.includes('T')) {
+            const d = new Date(strDate);
+            if (!isNaN(d)) return d;
+        }
+        const parts = strDate.replace(/-/g, '/').split('/');
+        if (parts.length >= 3) {
+            let year = parts[2].split(' ')[0], month = parts[1], day = parts[0].split(' ')[0];
+            if (parts[0].length === 4) { year = parts[0]; day = parts[2].split(' ')[0]; }
+            const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            if (!isNaN(d)) return d;
+        }
+        return null;
+    }
+
     function toggleMode() {
         tampilkanSemua = !tampilkanSemua;
         document.getElementById('btn-toggle').innerText = tampilkanSemua ? "📅 Filter Hari Ini Saja" : "📂 Tampilkan Semua Data";
-        ambilDataDariSupabase(); 
+        renderTabel(); // Render ulang tanpa fetch
     }
 
-    async function ambilDataDariSupabase() {
+    async function ambilDataDariSheet() {
         try {
-            const tableBody = document.getElementById('table-admin');
+            const urlAntiCache = urlScript + "?v=" + new Date().getTime();
+            const response = await fetch(urlAntiCache);
+            const resJson = await response.json();
+            
+            // Log ke konsol browser untuk Anda bisa cek
+            console.log("Data Mentah dari Server:", resJson);
+            
+            dataSeluruhnya = resJson.transaksi || [];
+            
             const d = new Date();
-            
-            // Format target harian DD/MM/YYYY
-            const tglTarget = d.getDate().toString().padStart(2, '0') + "/" + 
-                              (d.getMonth() + 1).toString().padStart(2, '0') + "/" + 
-                              d.getFullYear();
-                              
             document.getElementById('tgl-skrg').innerText = "Hari ini: " + d.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-            // Bangun Query Supabase (Urutan ID terbaru di paling atas)
-            let query = supabase.from('transaksi').select('*');
             
-            if (!tampilkanSemua) {
-                query = query.eq('tanggal', tglTarget);
-            }
-            
-            const { data: dataTransaksi, error } = await query.order('id', { ascending: false });
-
-            if (error) throw error;
-
-            tableBody.innerHTML = "";
-
-            if (!dataTransaksi || dataTransaksi.length === 0) {
-                const pesan = tampilkanSemua ? "Database Supabase masih kosong melongpong!" : "Belum ada pendaftaran hari ini.";
-                tableBody.innerHTML = `<tr><td colspan='5' style='text-align:center; padding:40px; opacity:0.6;'>${pesan}</td></tr>`;
-                return;
-            }
-
-            dataTransaksi.forEach((item) => {
-                const status = String(item.status || "Menunggu").trim();
-                const nomorAsli = item.wa || "";
-                const noWA = formatNomorWA(nomorAsli);
-                const namaPelanggan = item.nama || "Kak";
-                
-                let tombolWA = "";
-                if (noWA.length > 8) { 
-                    const pesanTeks = `Halo ${namaPelanggan},\nTerima kasih sudah berfoto di Revolusi Studio! 📸\n\nBerikut adalah link Google Drive untuk mengunduh soft file foto kakak:\n[Paste Link Drive Di Sini]\n\nJangan lupa tag IG kami ya kak! ✨`;
-                    const pesanEncoded = encodeURIComponent(pesanTeks);
-                    tombolWA = `<a href="https://wa.me/${noWA}?text=${pesanEncoded}" target="_blank" class="btn-action btn-wa">💬 Chat WA</a>`;
-                }
-
-                let actionContent = "";
-                let rowOpacity = "1";
-
-                if (status.toLowerCase() === "menunggu" || status === "") {
-                    actionContent = `
-                        ${tombolWA}
-                        <button class="btn-action btn-selesai" onclick="updateStatus(${item.id}, 'Selesai')">Selesai</button>
-                        <button class="btn-action btn-batal" onclick="updateStatus(${item.id}, 'Batal')">Batal</button>
-                    `;
-                } else {
-                    rowOpacity = "0.8"; 
-                    const color = status.toLowerCase() === "selesai" ? "#34C759" : "#FF3B30";
-                    actionContent = `
-                        ${tombolWA}
-                        <span class="status-badge" style="background:${color}22; color:${color}">${status}</span>
-                    `;
-                }
-
-                tableBody.innerHTML += `
-                    <tr style="opacity: ${rowOpacity}">
-                        <td style="font-size: 12px; opacity: 0.6;">${item.tanggal}</td>
-                        <td><strong>${namaPelanggan}</strong><br><small style="color: #85e09b;">${nomorAsli}</small></td>
-                        <td><span style="font-size:13px;">${item.tema || '-'} (x${item.jumlah})</span></td>
-                        <td style="font-weight: 600;">${status}</td>
-                        <td>${actionContent}</td>
-                    </tr>
-                `;
-            });
+            renderTabel();
         } catch (error) {
             console.error(error);
-            document.getElementById('table-admin').innerHTML = "<tr><td colspan='5' style='color:#ff8a80; text-align:center;'>Gagal sinkronisasi data dengan Supabase. Cek Internet.</td></tr>";
+            document.getElementById('table-admin').innerHTML = "<tr><td colspan='5' style='color:#ff8a80; text-align:center;'>Gagal sinkronisasi. Cek URL Script atau Internet.</td></tr>";
         }
     }
 
-    async function updateStatus(idTransaksi, statusBaru) {
+    function renderTabel() {
+        const tableBody = document.getElementById('table-admin');
+        const d = new Date();
+        const batasAwal = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
+        const batasAkhir = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
+
+        let dataYangDitampilkan = [];
+
+        if (tampilkanSemua) {
+            // Ambil semua data (maksimal 50 baris terakhir agar tidak berat)
+            dataYangDitampilkan = [...dataSeluruhnya].slice(-50);
+        } else {
+            // Filter hanya hari ini, dengan mencari nilai tanggal di kolom manapun jika "tanggal" kosong
+            dataSeluruhnya.forEach(item => {
+                // Trik: Coba ambil dari properti 'tanggal', 'Tanggal', 'waktu', atau kolom pertama (Object.values(item)[0])
+                const rawDate = item.tanggal || item.Tanggal || item.waktu || item.Waktu || item.timestamp || Object.values(item)[0];
+                const tglData = parseTanggal(rawDate);
+                
+                if (tglData) {
+                    tglData.setHours(12, 0, 0, 0);
+                    if (tglData >= batasAwal && tglData <= batasAkhir) {
+                        item._rawDateDisplay = rawDate; // Simpan teks asli untuk diintip
+                        dataYangDitampilkan.push(item);
+                    }
+                }
+            });
+        }
+
+        tableBody.innerHTML = "";
+
+        if (dataYangDitampilkan.length === 0) {
+            const pesan = tampilkanSemua ? "Data di Google Sheets KOSONG!" : "Belum ada pendaftaran HARI INI (Atau format tanggal di Sheets salah).";
+            tableBody.innerHTML = `<tr><td colspan='5' style='text-align:center; padding:40px; opacity:0.8;'>${pesan}</td></tr>`;
+            return;
+        }
+
+        dataYangDitampilkan.reverse().forEach((item) => {
+            const statusRaw = item.status || item.Status || "";
+            const status = String(statusRaw).trim();
+            const barisAsli = dataSeluruhnya.indexOf(item) + 2;
+            
+            // Ambil nama dan WA dengan pertahanan maksimal (jaga-jaga nama kolom huruf besar)
+            const nomorAsli = item.wa || item.WA || item.WhatsApp || "";
+            const noWA = formatNomorWA(nomorAsli);
+            const namaPelanggan = item.nama || item.Nama || "Pelanggan";
+            const temaStudio = item.tema || item.Tema || "-";
+            
+            // Tampilkan teks tanggal asli yang dikirim server
+            const waktuTampil = item._rawDateDisplay || item.tanggal || item.Tanggal || Object.values(item)[0] || "Kosong";
+
+            let tombolWA = "";
+            if (noWA.length > 8) { 
+                const pesanEncoded = encodeURIComponent(`Halo ${namaPelanggan},\nTerima kasih sudah berfoto di Revolusi Studio! 📸\nBerikut link Google Drive kakak:\n\n[Paste Link Di Sini]`);
+                tombolWA = `<a href="https://wa.me/${noWA}?text=${pesanEncoded}" target="_blank" class="btn-action btn-wa">💬 Chat WA</a>`;
+            }
+
+            let actionContent = "";
+            let rowOpacity = "1";
+
+            if (status.toLowerCase() === "menunggu" || status === "") {
+                actionContent = `
+                    ${tombolWA}
+                    <button class="btn-action btn-selesai" onclick="updateStatus(${barisAsli}, 'Selesai')">Selesai</button>
+                    <button class="btn-action btn-batal" onclick="updateStatus(${barisAsli}, 'Batal')">Batal</button>
+                `;
+            } else {
+                rowOpacity = "0.8"; 
+                const color = status.toLowerCase() === "selesai" ? "#34C759" : "#FF3B30";
+                actionContent = `${tombolWA} <span class="status-badge" style="background:${color}22; color:${color}">${status}</span>`;
+            }
+
+            tableBody.innerHTML += `
+                <tr style="opacity: ${rowOpacity}">
+                    <td style="font-size: 11px; opacity: 0.6;">${waktuTampil}</td>
+                    <td><strong>${namaPelanggan}</strong><br><small style="color: #85e09b;">${nomorAsli}</small></td>
+                    <td><span style="font-size:13px;">${temaStudio}</span></td>
+                    <td style="font-weight: 600;">${status}</td>
+                    <td>${actionContent}</td>
+                </tr>
+            `;
+        });
+    }
+
+    async function updateStatus(nomorBaris, statusBaru) {
         if (!confirm("Ubah status menjadi " + statusBaru + "?")) return;
-        
         const btn = event.target;
         const teksAsli = btn.innerText;
-        btn.innerText = "...";
-        btn.disabled = true;
+        btn.innerText = "..."; btn.disabled = true;
 
         try {
-            // Tembak langsung menggunakan ID Unik Baris Supabase (Akurasi 100% anti tertukar!)
-            const { error } = await supabase
-                .from('transaksi')
-                .update({ status: statusBaru })
-                .eq('id', idTransaksi);
-
-            if (error) throw error;
-            
-            ambilDataDariSupabase(); // Render ulang data kilat
-        } catch (e) {
-            console.error(e);
-            alert("Gagal memperbarui status ke server!");
-        } finally {
-            btn.innerText = teksAsli;
-            btn.disabled = false;
-        }
+            const resp = await fetch(urlScript, { method: 'POST', body: JSON.stringify({ type: "update", index: nomorBaris, status: statusBaru }) });
+            if ((await resp.text()).includes("Sukses")) ambilDataDariSheet();
+            else alert("Gagal update!");
+        } catch (e) { alert("Kesalahan koneksi!"); }
+        finally { btn.innerText = teksAsli; btn.disabled = false; }
     }
 
-    // Jalankan pertama kali
-    ambilDataDariSupabase();
-    // Auto-refresh data live setiap 15 detik (Supabase sangat ringan, jadi bisa lebih cepat dari 30 detik!)
-    setInterval(ambilDataDariSupabase, 15000);
+    ambilDataDariSheet();
+    setInterval(ambilDataDariSheet, 30000); // Refresh otomatis 30 detik
 </script>
 
 </body>
