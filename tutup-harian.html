@@ -3,62 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tutup Harian - Revolusi Studio</title>
+    <title>Tutup Harian - Supabase Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --glass: rgba(255, 255, 255, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.25);
-            --ios-blue: #007AFF;
-            --text-main: #ffffff;
-        }
-
-        body {
-            margin: 0; padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: var(--text-main); background: transparent; 
-        }
-
+        :root { --glass: rgba(255, 255, 255, 0.15); --glass-border: rgba(255, 255, 255, 0.25); --ios-blue: #007AFF; --text-main: #ffffff; }
+        body { margin: 0; padding: 20px; font-family: -apple-system, sans-serif; color: var(--text-main); background: transparent; }
         .container { max-width: 600px; margin: 0 auto; }
-
-        .glass-card {
-            background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border); border-radius: 25px; padding: 30px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2); text-align: center;
-        }
-
+        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 25px; padding: 30px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
         .header h1 { margin: 0 0 5px 0; font-size: 24px; font-weight: 800; }
         .header p { margin: 0 0 25px 0; opacity: 0.8; font-size: 14px; }
-
         .input-group { text-align: left; margin-bottom: 25px; }
         label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 10px; margin-left: 5px; opacity: 0.9; }
-
-        input {
-            width: 100%; padding: 18px; background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 15px; color: white;
-            font-size: 24px; font-weight: bold; text-align: center;
-            box-sizing: border-box; transition: all 0.3s;
-        }
+        input { width: 100%; padding: 18px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 15px; color: white; font-size: 24px; font-weight: bold; text-align: center; box-sizing: border-box; }
         input:focus { outline: none; border-color: var(--ios-blue); background: rgba(0,0,0,0.4); }
-
-        button {
-            width: 100%; padding: 16px; background: var(--ios-blue); color: white;
-            border: none; border-radius: 15px; font-size: 16px; font-weight: 600;
-            cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
-        }
+        button { width: 100%; padding: 16px; background: var(--ios-blue); color: white; border: none; border-radius: 15px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         button:active { transform: scale(0.96); }
-
         #area-hasil { display: none; animation: fadeIn 0.5s forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         .stat-box { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; text-align: left; }
         .stat-box h3 { margin: 0 0 5px 0; font-size: 11px; opacity: 0.7; text-transform: uppercase; }
         .stat-box p { margin: 0; font-size: 18px; font-weight: 700; }
-
         .selisih-box { padding: 20px; border-radius: 15px; margin: 20px 0; border: 2px dashed rgba(255,255,255,0.3); }
         .selisih-box h2 { margin: 0 0 5px 0; font-size: 16px; text-transform: uppercase; }
         .selisih-box p { margin: 0; font-size: 32px; font-weight: 800; }
-
         .kurang { background: rgba(255, 59, 48, 0.15); color: #ff8a80; border-color: rgba(255, 59, 48, 0.5); }
         .lebih { background: rgba(52, 199, 89, 0.15); color: #85e09b; border-color: rgba(52, 199, 89, 0.5); }
         .pas { background: rgba(0, 122, 255, 0.15); color: #80c1ff; border-color: rgba(0, 122, 255, 0.5); }
@@ -80,26 +48,16 @@
                 <input type="number" id="uang-fisik" placeholder="0" required>
             </div>
             <button onclick="prosesTutupHarian()" id="btn-proses">Hitung Rekap Harian</button>
-            <p style="font-size: 12px; opacity: 0.6; margin-top: 15px;">*Data akan ditarik langsung (Live) dari server.</p>
+            <p style="font-size: 12px; opacity: 0.6; margin-top: 15px;">*Data ditarik live (0.01 detik) dari Supabase.</p>
         </div>
 
         <div id="area-hasil">
             <div class="summary-grid">
-                <div class="stat-box">
-                    <h3>Pemasukan Cash</h3>
-                    <p id="res-cash">Rp 0</p>
-                </div>
-                <div class="stat-box">
-                    <h3>Pemasukan QRIS</h3>
-                    <p id="res-qris">Rp 0</p>
-                </div>
-                <div class="stat-box">
-                    <h3>Pengeluaran Laci</h3>
-                    <p id="res-pengeluaran" style="color:#ff8a80;">- Rp 0</p>
-                </div>
+                <div class="stat-box"><h3>Pemasukan Cash</h3><p id="res-cash">Rp 0</p></div>
+                <div class="stat-box"><h3>Pemasukan QRIS</h3><p id="res-qris">Rp 0</p></div>
+                <div class="stat-box"><h3>Pengeluaran Laci</h3><p id="res-pengeluaran" style="color:#ff8a80;">- Rp 0</p></div>
                 <div class="stat-box" style="background: rgba(255,255,255,0.2);">
-                    <h3 style="color: white; opacity: 1;">Total Omzet Hari Ini</h3>
-                    <p id="res-omzet">Rp 0</p>
+                    <h3 style="color: white; opacity: 1;">Total Omzet Hari Ini</h3><p id="res-omzet">Rp 0</p>
                 </div>
             </div>
 
@@ -123,142 +81,74 @@
 </div>
 
 <script>
-    // URL Deployment Web App Apps Script Anda
-    const urlScript = "https://script.google.com/macros/s/AKfycbwPdoH2h6VZLGb_LBeIO8Fi1yBrmY8Efm2hWry_9myk6mCbSkQqi6WQOHaXxIxk43BAjQ/exec";
+    // --- KUNCI SUPABASE ---
+    const supabaseUrl = 'https://jxlpoqjfblnjxcfbnkjf.supabase.co'; 
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4bHBvcWpmYmxuanhjZmJua2pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODI0NzYsImV4cCI6MjA5ODY1ODQ3Nn0.iJpxBgGtnjYNui7YdoLnrvfiL20pdGb2mLdUUvaGqJU'; 
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     const d = new Date();
-    
-    // TANGGAL TARGET UNTUK FILTER (Format mutlak: DD/MM/YYYY)
     const tglTarget = d.getDate().toString().padStart(2, '0') + "/" + 
                       (d.getMonth() + 1).toString().padStart(2, '0') + "/" + 
                       d.getFullYear();
-
+                      
     const waktuLengkap = tglTarget + " " + d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0');
-                       
     document.getElementById('tgl-hari-ini').innerText = "Tanggal: " + tglTarget;
-
-    // --- 1. FUNGSI PEMBERSIH ANGKA (Anti "Rp" atau titik/koma di Google Sheets) ---
-    function bersihkanAngka(val) {
-        if (!val) return 0;
-        // Hapus semua karakter yang BUKAN angka
-        const angkaBersih = String(val).replace(/[^0-9]/g, '');
-        return parseInt(angkaBersih) || 0;
-    }
-
-    // --- 2. FUNGSI PENGUBAH TANGGAL SUPER KETAT (Konversi semua format ke DD/MM/YYYY) ---
-    function formatKeDDMMYYYY(rawDate) {
-        if (!rawDate) return "";
-        let str = String(rawDate).trim();
-        
-        // Jika format dari sistem Google (mengandung huruf 'T')
-        if (str.includes('T')) {
-            const dateObj = new Date(str);
-            if (!isNaN(dateObj)) {
-                return dateObj.getDate().toString().padStart(2,'0') + '/' + 
-                       (dateObj.getMonth()+1).toString().padStart(2,'0') + '/' + 
-                       dateObj.getFullYear();
-            }
-        }
-
-        // Jika format manual teks biasa (mengandung garis miring atau strip)
-        const parts = str.replace(/-/g, '/').split('/');
-        if (parts.length >= 3) {
-            let year = parts[2].split(' ')[0]; // Buang jam jika ada
-            let month = parts[1];
-            let day = parts[0].split(' ')[0]; 
-
-            // Jika tahun ditulis di depan (YYYY/MM/DD)
-            if (parts[0].length === 4) { 
-                year = parts[0]; 
-                day = parts[2].split(' ')[0]; 
-            }
-            return day.padStart(2,'0') + '/' + month.padStart(2,'0') + '/' + year;
-        }
-        
-        return str.split(' ')[0]; // Pasrah pakai teks aslinya jika format aneh
-    }
 
     async function prosesTutupHarian() {
         const inputFisik = document.getElementById('uang-fisik').value;
         const btn = document.getElementById('btn-proses');
 
-        if (!inputFisik || inputFisik === "") {
-            alert("⚠️ Masukkan total uang fisik di laci dulu!");
-            return;
-        }
+        if (!inputFisik) { alert("⚠️ Masukkan uang fisik dulu!"); return; }
+        if(!confirm("Lanjutkan tutup kasir harian?")) return;
 
-        if(!confirm("PERINGATAN: Data tidak bisa diubah setelah diproses. Pastikan uang fisik sudah benar. Lanjutkan?")) return;
-
-        btn.innerText = "⏳ Sedang Menarik Data Live...";
+        btn.innerText = "⏳ Sinkronisasi Supabase...";
         btn.disabled = true;
 
         try {
-            // --- Trik Anti-Cache Browser: Tambahkan Waktu Detik Ini di URL ---
-            const urlAntiCache = urlScript + "?v=" + new Date().getTime();
-            const res = await fetch(urlAntiCache);
-            const resJson = await res.json();
-            
-            const dataTransaksi = resJson.transaksi || [];
-            const dataPengeluaran = resJson.pengeluaran || [];
+            // Tarik data Transaksi HARI INI
+            const { data: trx, error: errTrx } = await supabase.from('transaksi').select('*').eq('tanggal', tglTarget);
+            if (errTrx) throw errTrx;
+
+            // Tarik data Pengeluaran HARI INI
+            const { data: pgl, error: errPgl } = await supabase.from('pengeluaran').select('*').eq('tanggal', tglTarget);
+            if (errPgl) throw errPgl;
 
             let totalOmzet = 0, totalCash = 0, totalQris = 0, totalPengeluaran = 0;
 
-            // 3. Kalkulasi Transaksi Hari Ini
-            dataTransaksi.forEach(item => {
-                const tglDataBersih = formatKeDDMMYYYY(item.tanggal || item.Tanggal);
-                
-                // Jika tanggal di baris ini sama persis dengan tanggal hari ini
-                if (tglDataBersih === tglTarget) {
+            // Hitung Pemasukan
+            (trx || []).forEach(item => {
+                const status = String(item.status).trim().toLowerCase();
+                if (status === "selesai" || status === "sukses" || status === "") {
+                    const harga = parseInt(item.total) || 0;
+                    const metode = String(item.pembayaran).trim().toUpperCase();
                     
-                    // Kita bebaskan statusnya (tidak hanya 'selesai'), pokoknya kalau ada harga, kita hitung!
-                    const harga = bersihkanAngka(item.total || item.Total);
-                    const metode = item.pembayaran ? String(item.pembayaran).trim().toUpperCase() : "";
-
                     totalOmzet += harga;
-                    
-                    // Deteksi kata CASH atau TUNAI
                     if (metode.includes("CASH") || metode.includes("TUNAI")) {
                         totalCash += harga;
                     } else {
-                        totalQris += harga; // Sisanya dianggap QRIS/Transfer
+                        totalQris += harga;
                     }
                 }
             });
 
-            // 4. Kalkulasi Pengeluaran Hari Ini
-            dataPengeluaran.forEach(item => {
-                const tglBiayaBersih = formatKeDDMMYYYY(item.tanggal || item.Tanggal);
-                
-                if (tglBiayaBersih === tglTarget) {
-                    totalPengeluaran += bersihkanAngka(item.jumlah || item.Jumlah);
-                }
-            });
+            // Hitung Pengeluaran
+            (pgl || []).forEach(item => { totalPengeluaran += parseInt(item.jumlah) || 0; });
 
             const uangSeharusnya = totalCash - totalPengeluaran;
             const uangFisikKasir = parseInt(inputFisik);
             const selisih = uangFisikKasir - uangSeharusnya;
 
-            // 5. REKAM KE SERVER
-            const payload = {
-                type: "tutup_harian",
+            // Simpan Riwayat Tutup Harian ke Supabase
+            const { error: errInsert } = await supabase.from('tutup_harian').insert([{
                 tanggal: waktuLengkap,
                 fisik: uangFisikKasir,
                 sistem: uangSeharusnya,
                 selisih: selisih
-            };
+            }]);
 
-            const responsePOST = await fetch(urlScript, { 
-                method: 'POST', 
-                headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-                body: JSON.stringify(payload) 
-            });
+            if (errInsert) throw errInsert;
 
-            const hasilPOST = await responsePOST.text();
-            if (!hasilPOST.toLowerCase().includes("sukses")) {
-                console.warn("Server Error: " + hasilPOST);
-            }
-
-            // 6. TAMPILKAN HASIL
+            // Tampilkan UI
             document.getElementById('res-omzet').innerText = "Rp " + totalOmzet.toLocaleString('id-ID');
             document.getElementById('res-cash').innerText = "Rp " + totalCash.toLocaleString('id-ID');
             document.getElementById('res-qris').innerText = "Rp " + totalQris.toLocaleString('id-ID');
@@ -276,7 +166,7 @@
 
         } catch (e) {
             console.error(e);
-            alert("❌ Gagal menarik data dari server. Cek koneksi Anda!");
+            alert("❌ Gagal terhubung ke database. Coba lagi.");
             btn.innerText = "Hitung Rekap Harian";
             btn.disabled = false;
         }

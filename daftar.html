@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Revolusi Studio - Supabase Edition</title>
-    
-    <!-- 🚀 INI ADALAH MESIN PENGHUBUNG SUPABASE (WAJIB ADA) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+    <title>Daftar Revolusi Studio - Liquid UI</title>
     <style>
         :root {
             --glass: rgba(255, 255, 255, 0.2);
@@ -18,19 +14,31 @@
         }
 
         body {
-            margin: 0; padding: 0;
+            margin: 0;
+            padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            /* Latar belakang dengan gradasi warna iOS agar efek glass terlihat maksimal */
             background-image: url('https://images.unsplash.com/photo-1647346425804-34383b95644b?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-            background-size: cover; background-position: center; background-attachment: fixed;
-            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             color: var(--text-main);
         }
 
         .glass-container {
-            width: 90%; max-width: 400px; background: var(--glass);
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-border); border-radius: 35px;
-            padding: 35px 25px; box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 400px;
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 35px;
+            padding: 35px 25px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
             text-align: center;
         }
 
@@ -41,31 +49,62 @@
         label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; margin-left: 8px; }
 
         input, select {
-            width: 100%; padding: 14px 18px; background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; color: white;
-            font-size: 16px; box-sizing: border-box; transition: all 0.3s;
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.3s;
         }
-        input:focus, select:focus { outline: none; background: rgba(255, 255, 255, 0.25); border-color: var(--ios-blue); }
+
+        input:focus, select:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.25);
+            border-color: var(--ios-blue);
+        }
+
         option { background-color: #1e3c72; color: white; }
 
         .price-tag {
-            background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 20px;
-            margin: 20px 0; border: 1px dashed var(--glass-border);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 20px;
+            margin: 20px 0;
+            border: 1px dashed var(--glass-border);
         }
+
         .total-amount { font-size: 24px; font-weight: 800; color: #fff; }
 
         button {
-            width: 100%; padding: 18px; background: var(--ios-blue); color: white;
-            border: none; border-radius: 20px; font-size: 17px; font-weight: 600;
-            cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
+            width: 100%;
+            padding: 18px;
+            background: var(--ios-blue);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
         }
+
         button:active { transform: scale(0.97); }
 
         #qris-section {
-            display: none; margin-top: 20px; padding: 15px; background: white;
-            border-radius: 20px; animation: fadeIn 0.5s;
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 20px;
+            animation: fadeIn 0.5s;
         }
+
         #qris-section img { width: 100%; border-radius: 10px; }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -127,19 +166,12 @@
             <p style="color: #666; font-size: 11px; margin-top: 5px;">*Tunjukkan bukti bayar ke staf</p>
         </div>
         
-        <button onclick="location.reload()" style="background: rgba(255,255,255,0.2); margin-top: 20px; box-shadow: none;">Daftar Lagi</button>
+        <button onclick="location.reload()" style="background: rgba(255,255,255,0.2); margin-top: 20px;">Daftar Lagi</button>
     </div>
 </div>
 
 <script>
-    // ======================================================================
-    // ⚠️ WAJIB DIISI: GANTI DENGAN KUNCI SUPABASE ANDA ⚠️
-    // ======================================================================
-    const supabaseUrl = 'https://jxlpoqjfblnjxcfbnkjf.supabase.co '; 
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4bHBvcWpmYmxuanhjZmJua2pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODI0NzYsImV4cCI6MjA5ODY1ODQ3Nn0.iJpxBgGtnjYNui7YdoLnrvfiL20pdGb2mLdUUvaGqJU'; 
-    
-    // Inisialisasi Koneksi (Menghidupkan mesin)
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    const urlScript = "https://script.google.com/macros/s/AKfycbwPdoH2h6VZLGb_LBeIO8Fi1yBrmY8Efm2hWry_9myk6mCbSkQqi6WQOHaXxIxk43BAjQ/exec";
 
     function hitungHarga() {
         const tema = document.getElementById('tema').value;
@@ -159,48 +191,35 @@
         const metode = document.getElementById('pembayaran').value;
         const total = hitungHarga();
 
-        if (!nama || !wa) { alert("⚠️ Isi nama dan WA dulu ya!"); return; }
+        if (!nama || !wa) { alert("Isi nama dan WA dulu ya!"); return; }
 
-        btn.innerText = "Melesat ke server... 🚀";
+        btn.innerText = "Memproses...";
         btn.disabled = true;
 
         try {
-            // 1. Format Tanggal Standar DD/MM/YYYY
-            const d = new Date();
-            const tglHariIni = d.getDate().toString().padStart(2, '0') + "/" + 
-                               (d.getMonth() + 1).toString().padStart(2, '0') + "/" + 
-                               d.getFullYear();
+            const res = await fetch(urlScript);
+            const resJson = await res.json();
+            const dataT = resJson.transaksi || [];
+            const tgl = new Date().toLocaleDateString('id-ID');
+            
+            const antreanHariIni = dataT.filter(item => item.tema === tema && item.tanggal === tgl).length;
+            const nomorUrut = (antreanHariIni + 1).toString().padStart(3, '0');
 
-            // 2. Cek Antrean Hari Ini untuk Menentukan Nomor Tiket (Super Cepat)
-            const { count, error: errHitung } = await supabase
-                .from('transaksi')
-                .select('*', { count: 'exact', head: true })
-                .eq('tanggal', tglHariIni)
-                .eq('tema', tema);
+            const payload = {
+                type: "transaksi",
+                tanggal: tgl,
+                nama: nama,
+                wa: wa,
+                status: "Menunggu",
+                tema: tema,
+                jumlah: jml,
+                pembayaran: metode,
+                total: total
+            };
 
-            if (errHitung) throw errHitung;
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify(payload) });
 
-            const nomorUrut = ((count || 0) + 1).toString().padStart(3, '0');
-
-            // 3. Masukkan Data ke Database Supabase
-            const { error: errInsert } = await supabase
-                .from('transaksi')
-                .insert([
-                    {
-                        tanggal: tglHariIni,
-                        nama: nama,
-                        wa: wa,
-                        status: "Menunggu",
-                        tema: tema,
-                        jumlah: parseInt(jml),
-                        pembayaran: metode,
-                        total: total
-                    }
-                ]);
-
-            if (errInsert) throw errInsert;
-
-            // 4. Sukses! Tampilkan Tiket
+            // Tampilkan Tiket
             document.getElementById('form-pendaftaran').style.display = "none";
             document.getElementById('ticket-result').style.display = "block";
             document.getElementById('nomor-tampil').innerText = nomorUrut;
@@ -210,9 +229,8 @@
                 document.getElementById('qris-section').style.display = "block";
             }
 
-        } catch (error) {
-            console.error("Gagal Database:", error);
-            alert("❌ Koneksi ke Database Gagal. Pastikan URL dan Key Supabase sudah benar.");
+        } catch (e) {
+            alert("Koneksi bermasalah. Coba lagi!");
             btn.innerText = "AMBIL ANTREAN";
             btn.disabled = false;
         }
