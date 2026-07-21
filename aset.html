@@ -3,154 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventaris Aset - Revolusi Studio</title>
+    <title>Manajemen Aset - Revolusi Studio</title>
+    
+    <!-- 🚀 WAJIB: Library Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.25);
-            --ios-blue: #007AFF;
+            --glass: rgba(255, 255, 255, 0.15); --glass-border: rgba(255, 255, 255, 0.25);
+            --ios-blue: #007AFF; --ios-purple: #AF52DE; --ios-green: #34C759;
             --text-main: #ffffff;
         }
-
         body {
-            margin: 0;
-            padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-image: url('https://images.unsplash.com/photo-1647346425804-34383b95644b?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            color: var(--text-main);
-            min-height: 100vh;
+            margin: 0; padding: 20px; font-family: -apple-system, sans-serif;
+            color: var(--text-main); background: #111;
+            background-image: url('https://images.unsplash.com/photo-1614851099511-773084f6911d?q=80&w=1170&auto=format&fit=crop');
+            background-size: cover; background-attachment: fixed;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
-
-        .container { max-width: 800px; margin: 0 auto; }
-
+        .container { width: 100%; max-width: 1000px; }
         .glass-card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 25px;
-            padding: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
+            background: var(--glass); backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border); border-radius: 25px; padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); margin-bottom: 25px;
         }
-
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -1px; }
-
-        .total-aset-box {
-            text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 20px;
-            border: 1px dashed var(--glass-border);
-            margin-bottom: 20px;
-        }
-        .total-aset-box h3 { margin: 0; font-size: 14px; opacity: 0.8; font-weight: 500; }
-        .total-aset-box p { margin: 5px 0 0; font-size: 32px; font-weight: 800; color: #85e09b; }
-
-        .form-row { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; }
-        .form-group { flex: 1; min-width: 200px; text-align: left; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;}
+        .header h1 { margin: 0; font-size: 26px; font-weight: 800; color: #fff; }
         
-        label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 8px; margin-left: 5px; opacity: 0.9; }
-
+        /* Grid Input */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .form-group { text-align: left; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; margin-left: 5px; opacity: 0.9; }
         input, select {
-            width: 100%;
-            padding: 14px 18px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 15px;
-            color: white;
-            font-size: 15px;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
+            width: 100%; padding: 12px 15px; background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 12px; color: white;
+            font-size: 15px; box-sizing: border-box; transition: 0.3s;
         }
-
-        input:focus, select:focus { outline: none; background: rgba(255, 255, 255, 0.3); border-color: var(--ios-blue); }
-        option { background-color: #1e3c72; color: white; }
-
-        button {
-            width: 100%;
-            padding: 16px;
-            background: var(--ios-blue);
-            color: white;
-            border: none;
-            border-radius: 15px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
+        input:focus, select:focus { outline: none; border-color: var(--ios-purple); background: rgba(0,0,0,0.4); }
+        option { background-color: #1a1a2e; color: white; }
+        
+        button.btn-primary {
+            width: 100%; padding: 15px; background: var(--ios-purple); color: white;
+            border: none; border-radius: 15px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s;
         }
-        button:active { transform: scale(0.96); }
+        button.btn-primary:active { transform: scale(0.98); }
+        button:disabled { background: #555; cursor: not-allowed; }
 
-        .btn-back { background: rgba(255, 255, 255, 0.1); box-shadow: none; border: 1px solid var(--glass-border); margin-bottom: 20px; }
+        /* Total Box */
+        .total-box {
+            background: linear-gradient(135deg, rgba(175, 82, 222, 0.3), rgba(0,0,0,0.3));
+            border: 2px solid rgba(175, 82, 222, 0.5); border-radius: 20px; padding: 25px;
+            text-align: center; margin-bottom: 25px;
+        }
+        .total-box h3 { margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; }
+        .total-box p { margin: 0; font-size: 40px; font-weight: 900; text-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
-        /* Tabel Data */
-        .table-wrapper { overflow-x: auto; }
+        /* Tabel */
+        .table-wrapper { overflow-x: auto; max-height: 400px; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background: rgba(255, 255, 255, 0.1); padding: 15px; font-size: 13px; text-transform: uppercase; }
-        td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 14px; }
-        tr:last-child td { border-bottom: none; }
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; background: rgba(255,255,255,0.2); }
+        th { background: rgba(0, 0, 0, 0.3); padding: 15px; font-size: 12px; text-transform: uppercase; position: sticky; top: 0; backdrop-filter: blur(10px); }
+        td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 14px; }
+        .badge { padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; }
+        .badge-kamera { background: rgba(0, 122, 255, 0.2); color: #80c1ff; }
+        .badge-lighting { background: rgba(255, 149, 0, 0.2); color: #ffd699; }
+        .badge-properti { background: rgba(175, 82, 222, 0.2); color: #e5b3ff; }
+        .badge-komputer { background: rgba(52, 199, 89, 0.2); color: #85e09b; }
+        .badge-baik { color: #85e09b; } .badge-rusak { color: #ff8a80; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <button onclick="window.location.href='index.html'" class="btn-back">⬅ Kembali ke Portal</button>
-
+    <!-- BAGIAN 1: INPUT ASET -->
     <div class="glass-card">
         <div class="header">
-            <h1>Inventaris Aset</h1>
-            <p style="margin-top: 5px; opacity: 0.8; font-size: 14px;">Catat nilai perangkat dan properti studio.</p>
+            <h1>💎 Registrasi Aset Baru</h1>
         </div>
-
-        <div class="total-aset-box">
-            <h3>TOTAL VALUASI ASET</h3>
-            <p id="display-total">Rp 0</p>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group" style="flex: 2;">
-                <label>Nama Aset (Merek/Tipe)</label>
-                <input type="text" id="nama-aset" placeholder="Contoh: Kamera Canon EOS M50" required>
+        <form id="formAset">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nama Barang / Tipe</label>
+                    <input type="text" id="nama_barang" placeholder="Cth: Canon EOS R5 / Lensa 50mm" required>
+                </div>
+                <div class="form-group">
+                    <label>Kategori Aset</label>
+                    <select id="kategori" required>
+                        <option value="Kamera & Lensa">Kamera & Lensa</option>
+                        <option value="Lighting & Flash">Lighting & Flash</option>
+                        <option value="Properti Studio">Properti Studio (Gorden/Kursi/dll)</option>
+                        <option value="Komputer & Printer">Komputer & Printer</option>
+                        <option value="Lain-lain">Lain-lain</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Harga Beli (Rp)</label>
+                    <input type="number" id="harga_beli" min="0" placeholder="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Kondisi Saat Ini</label>
+                    <select id="kondisi">
+                        <option value="Baik / Normal">Baik / Normal</option>
+                        <option value="Perlu Servis">Perlu Servis</option>
+                        <option value="Rusak / Tidak Dipakai">Rusak / Tidak Dipakai</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Pembelian (Opsional)</label>
+                    <input type="date" id="tanggal_beli">
+                </div>
             </div>
-            <div class="form-group" style="flex: 1;">
-                <label>Kategori</label>
-                <select id="kategori">
-                    <option value="Elektronik">Elektronik & IT</option>
-                    <option value="Properti">Properti & Dekorasi</option>
-                    <option value="Software">Software & Lisensi</option>
-                    <option value="Lainnya">Lainnya</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Nilai/Harga Aset (Rupiah)</label>
-            <input type="number" id="nilai-aset" placeholder="Contoh: 8500000" required>
-        </div>
-
-        <button onclick="simpanAset()" id="btnSubmit">Simpan Data Aset</button>
+            <button type="submit" class="btn-primary" id="btnSimpan">📥 SIMPAN ASET KE DATABASE</button>
+        </form>
     </div>
 
+    <!-- BAGIAN 2: RINGKASAN & TABEL -->
     <div class="glass-card">
-        <h3 style="margin-top: 0; font-size: 16px; opacity: 0.9;">Daftar Aset Terdaftar</h3>
+        <div class="total-box">
+            <h3>Total Nilai Inventaris Studio</h3>
+            <p id="total-aset">Rp 0</p>
+        </div>
+
+        <div class="header" style="border: none; padding-bottom: 0;">
+            <h3 style="margin: 0; font-size: 18px;">Daftar Aset Perusahaan</h3>
+            <button onclick="muatDataAset()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 10px; cursor: pointer;">🔄 Segarkan</button>
+        </div>
+        
         <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
-                        <th>Tgl Input</th>
-                        <th>Nama Aset</th>
+                        <th>Tgl Beli</th>
+                        <th>Nama Barang</th>
                         <th>Kategori</th>
+                        <th>Kondisi</th>
                         <th>Nilai (Rp)</th>
                     </tr>
                 </thead>
-                <tbody id="table-aset">
-                    <tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>
+                <tbody id="tabel-aset">
+                    <tr><td colspan="5" style="text-align: center;">Memuat data aset...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -158,89 +148,110 @@
 </div>
 
 <script>
-    // GANTI URL INI DENGAN URL DEPLOYMENT BARU ANDA
-    const urlScript = "https://script.google.com/macros/s/AKfycbwPdoH2h6VZLGb_LBeIO8Fi1yBrmY8Efm2hWry_9myk6mCbSkQqi6WQOHaXxIxk43BAjQ/exec";
+    const SUPABASE_URL = 'https://jxlpoqjfblnjxcfbnkjf.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4bHBvcWpmYmxuanhjZmJua2pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODI0NzYsImV4cCI6MjA5ODY1ODQ3Nn0.iJpxBgGtnjYNui7YdoLnrvfiL20pdGb2mLdUUvaGqJU'; 
+    
+    const dbKlien = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function muatDataAset() {
+    // Fungsi Format Uang
+    function formatRp(angka) { return "Rp " + parseInt(angka).toLocaleString('id-ID'); }
+
+    // Fungsi Submit Form
+    document.getElementById('formAset').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnSimpan');
+        btn.innerText = "Menyimpan... ⏳";
+        btn.disabled = true;
+
+        const nama = document.getElementById('nama_barang').value.trim();
+        const kategori = document.getElementById('kategori').value;
+        const harga = document.getElementById('harga_beli').value;
+        const kondisi = document.getElementById('kondisi').value;
+        
+        // Format Tanggal (Jika kosong, gunakan hari ini)
+        let tglRaw = document.getElementById('tanggal_beli').value;
+        if (!tglRaw) {
+            const d = new Date();
+            tglRaw = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0');
+        }
+        const arrTgl = tglRaw.split('-');
+        const tglFormatted = `${arrTgl[2]}/${arrTgl[1]}/${arrTgl[0]}`;
+
         try {
-            const res = await fetch(urlScript);
-            const resJson = await res.json();
-            const dataAset = resJson.aset || [];
-            
-            let totalValuasi = 0;
-            const tableBody = document.getElementById('table-aset');
-            tableBody.innerHTML = "";
+            const { error } = await dbKlien.from('aset').insert([{
+                nama_barang: nama,
+                kategori: kategori,
+                harga_beli: parseInt(harga),
+                kondisi: kondisi,
+                tanggal_beli: tglFormatted
+            }]);
 
-            if (dataAset.length === 0) {
-                tableBody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>Belum ada aset tercatat.</td></tr>";
+            if (error) throw error;
+
+            alert("✅ Aset berhasil ditambahkan ke inventaris!");
+            document.getElementById('formAset').reset();
+            muatDataAset(); // Langsung update tabel
+
+        } catch (error) {
+            console.error(error);
+            alert("❌ Gagal menyimpan aset.");
+        } finally {
+            btn.innerText = "📥 SIMPAN ASET KE DATABASE";
+            btn.disabled = false;
+        }
+    });
+
+    // Fungsi Tarik Data Aset & Hitung Total
+    window.muatDataAset = async function() {
+        try {
+            const { data, error } = await dbKlien.from('aset').select('*').order('id', { ascending: false });
+            if (error) throw error;
+
+            let totalNilai = 0;
+            const tbody = document.getElementById('tabel-aset');
+            tbody.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; opacity: 0.6;">Belum ada aset yang didaftarkan.</td></tr>`;
+                document.getElementById('total-aset').innerText = "Rp 0";
                 return;
             }
 
-            // Tampilkan dari yang terbaru dimasukkan
-            dataAset.reverse().forEach(item => {
-                const nilai = parseInt(item.nilai) || 0;
-                totalValuasi += nilai;
+            data.forEach(item => {
+                totalNilai += parseInt(item.harga_beli) || 0;
+                
+                // Styling Kategori
+                let badgeKat = "";
+                if (item.kategori.includes("Kamera")) badgeKat = "badge-kamera";
+                else if (item.kategori.includes("Lighting")) badgeKat = "badge-lighting";
+                else if (item.kategori.includes("Properti")) badgeKat = "badge-properti";
+                else if (item.kategori.includes("Komputer")) badgeKat = "badge-komputer";
+                else badgeKat = "badge-kamera";
 
-                tableBody.innerHTML += `
+                // Styling Kondisi
+                const classKondisi = item.kondisi.includes("Rusak") ? "badge-rusak" : (item.kondisi.includes("Servis") ? "badge-lighting" : "badge-baik");
+
+                tbody.innerHTML += `
                     <tr>
-                        <td style="font-size:12px; opacity:0.7;">${item.tanggal || '-'}</td>
-                        <td><strong>${item.nama_aset || item.nama}</strong></td>
-                        <td><span class="badge">${item.kategori}</span></td>
-                        <td style="font-weight: 600;">Rp ${nilai.toLocaleString('id-ID')}</td>
+                        <td style="opacity: 0.7;">${item.tanggal_beli}</td>
+                        <td style="font-weight: bold;">${item.nama_barang}</td>
+                        <td><span class="badge ${badgeKat}">${item.kategori}</span></td>
+                        <td><span style="font-size: 12px; font-weight: bold;" class="${classKondisi}">${item.kondisi}</span></td>
+                        <td style="font-weight: bold; color: #e5b3ff;">${formatRp(item.harga_beli)}</td>
                     </tr>
                 `;
             });
 
-            document.getElementById('display-total').innerText = "Rp " + totalValuasi.toLocaleString('id-ID');
+            document.getElementById('total-aset').innerText = formatRp(totalNilai);
 
-        } catch (e) {
-            console.error(e);
-            document.getElementById('table-aset').innerHTML = "<tr><td colspan='4' style='color:#ff8a80;'>Gagal memuat data aset.</td></tr>";
+        } catch (error) {
+            console.error(error);
+            document.getElementById('tabel-aset').innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ff8a80;">Gagal memuat data dari Supabase.</td></tr>`;
         }
-    }
+    };
 
-    async function simpanAset() {
-        const btn = document.getElementById('btnSubmit');
-        const nama = document.getElementById('nama-aset').value;
-        const kategori = document.getElementById('kategori').value;
-        const nilai = document.getElementById('nilai-aset').value;
-
-        if (!nama || !nilai) { alert("Nama dan Nilai aset wajib diisi!"); return; }
-
-        btn.innerText = "Menyimpan...";
-        btn.disabled = true;
-
-        const d = new Date();
-        const tgl = d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
-
-        const payload = {
-            type: "aset",
-            tanggal: tgl,
-            nama_aset: nama,
-            kategori: kategori,
-            nilai: nilai
-        };
-
-        try {
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify(payload) });
-            
-            // Bersihkan form
-            document.getElementById('nama-aset').value = "";
-            document.getElementById('nilai-aset').value = "";
-            
-            // Refresh tabel
-            muatDataAset();
-        } catch (e) {
-            alert("Gagal koneksi. Coba lagi!");
-        } finally {
-            btn.innerText = "Simpan Data Aset";
-            btn.disabled = false;
-        }
-    }
-
-    // Load data awal
+    // Panggil saat halaman dibuka
     muatDataAset();
 </script>
-
 </body>
 </html>

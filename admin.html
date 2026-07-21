@@ -3,255 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Revolusi Studio</title>
+    <title>Panel Admin & Kontrol Antrean - Revolusi Studio</title>
+    
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        :root {
-            --glass: rgba(255, 255, 255, 0.15); --glass-border: rgba(255, 255, 255, 0.25);
-            --ios-blue: #007AFF; --ios-green: #34C759; --ios-red: #FF3B30; --wa-green: #25D366;
-            --text-main: #ffffff;
-        }
+        :root { --glass: rgba(255, 255, 255, 0.12); --glass-border: rgba(255, 255, 255, 0.2); --text-main: #ffffff; }
+        body { font-family: -apple-system, sans-serif; margin: 0; padding: 15px; color: var(--text-main); min-height: 100vh; background: #0a0a0a; box-sizing: border-box; }
+        .container { max-width: 1250px; margin: auto; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .header h1 { margin: 0; font-size: 22px; font-weight: 800; color: #ff9500; }
+        
+        .toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
+        input, select { padding: 10px 14px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; color: white; font-size: 13px; outline: none; }
+        input:focus, select:focus { border-color: #ff9500; }
 
-        body {
-            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-image: url('https://images.unsplash.com/photo-1647346425804-34383b95644b?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-            background-size: cover; background-position: center; background-attachment: fixed;
-            display: flex; justify-content: center; align-items: flex-start;
-            min-height: 100vh; color: var(--text-main); padding-top: 20px;
-        }
+        /* Tabel Data Antrean - Dibuat Kompak */
+        .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+        th { background: rgba(0,0,0,0.7); padding: 12px 10px; color: #ff9500; font-weight: 700; white-space: nowrap; }
+        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+        tr:hover { background: rgba(255,255,255,0.03); }
 
-        .admin-container { width: 100%; max-width: 900px; padding: 0 20px; box-sizing: border-box; }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: bold; text-transform: uppercase; display: inline-block; text-align: center; }
+        .badge-menunggu { background: rgba(255, 149, 0, 0.2); color: #ff9500; border: 1px solid rgba(255, 149, 0, 0.4); }
+        .badge-selesai { background: rgba(52, 199, 89, 0.2); color: #34c759; border: 1px solid rgba(52, 199, 89, 0.4); }
+        
+        /* Tombol Aksi Tersusun Rapi & Kompak */
+        .aksi-group { display: flex; flex-direction: column; gap: 4px; min-width: 95px; }
+        .btn-aksi { padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; transition: 0.2s; text-align: center; width: 100%; }
+        .btn-selesai { background: #34C759; color: white; }
+        .btn-hapus { background: #FF3B30; color: white; }
+        .btn-aksi:active { transform: scale(0.95); }
 
-        .header-glass {
-            background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
-            border-radius: 25px; padding: 20px 30px; margin-bottom: 20px;
-            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            flex-wrap: wrap; gap: 10px;
-        }
-
-        h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-
-        .btn-refresh {
-            background: rgba(255, 255, 255, 0.2); border: 1px solid var(--glass-border); color: white;
-            padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.3s;
-        }
-        .btn-refresh:hover { background: rgba(255, 255, 255, 0.3); }
-
-        .btn-xray { background: rgba(255, 59, 48, 0.2); border-color: rgba(255, 59, 48, 0.5); }
-        .btn-xray:hover { background: rgba(255, 59, 48, 0.4); }
-
-        .table-container {
-            background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
-            border-radius: 25px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        }
-
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background: rgba(255, 255, 255, 0.1); padding: 18px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
-        td { padding: 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 15px; }
-        tr:last-child td { border-bottom: none; }
-
-        .btn-action {
-            display: inline-block; padding: 8px 14px; border: none; border-radius: 10px; font-weight: 600; font-size: 13px;
-            cursor: pointer; transition: 0.2s; margin-right: 5px; margin-bottom: 5px; text-decoration: none; text-align: center;
-        }
-        .btn-selesai { background: var(--ios-green); color: white; }
-        .btn-batal { background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid var(--glass-border); }
-        .btn-wa { background: var(--wa-green); color: white; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); }
-        .btn-wa:hover { background: #1ebd5a; }
-        .status-badge { padding: 6px 12px; border-radius: 10px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 5px; }
-
-        @media (max-width: 600px) {
-            th:nth-child(1), td:nth-child(1) { display: none; } 
-        }
+        .btn-nav { background: rgba(255,255,255,0.15); border: 1px solid var(--glass-border); color: white; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: bold; text-decoration: none; display: inline-block; }
+        .btn-nav:hover { background: rgba(255,255,255,0.3); }
     </style>
 </head>
 <body>
 
-<div class="admin-container">
-    <div class="header-glass">
+<div class="container">
+    <div class="glass-card header">
         <div>
-            <h1>Admin Panel</h1>
-            <span id="tgl-skrg" style="font-size: 12px; opacity: 0.7;">Memuat tanggal...</span>
+            <h1>Panel Admin & Kontrol Studio</h1>
+            <p id="sub-info" style="margin: 3px 0 0; opacity: 0.8; font-size: 13px;">Menghubungkan ke database Supabase... ⏳</p>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn-refresh btn-xray" id="btn-toggle" onclick="toggleMode()">📂 Tampilkan Semua Data</button>
-            <button class="btn-refresh" onclick="ambilDataDariSheet()">🔄 Segarkan</button>
+        <div style="display: flex; gap: 8px;">
+            <a href="daftar.html" class="btn-nav" target="_blank">➕ Daftar</a>
+            <a href="laporan.html" class="btn-nav" target="_blank">📊 Laporan</a>
         </div>
     </div>
 
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Waktu (Asli Server)</th>
-                    <th>Nama Pelanggan</th>
-                    <th>Studio</th>
-                    <th>Status</th>
-                    <th>Tindakan / Kirim File</th>
-                </tr>
-            </thead>
-            <tbody id="table-admin">
-                <tr><td colspan="5" style="text-align:center;">Menghubungkan ke server...</td></tr>
-            </tbody>
-        </table>
+    <!-- KONTROL & PENCARIAN -->
+    <div class="glass-card">
+        <div class="toolbar">
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <input type="text" id="cariNama" placeholder="Cari nama / WA..." oninput="filterData()">
+                <select id="filterStudio" onchange="filterData()">
+                    <option value="ALL">Semua Studio / Tema</option>
+                    <option value="Classic Retro">Classic Retro (S1)</option>
+                    <option value="Blue Room">Blue Room (S2)</option>
+                    <option value="Night Fest">Night Fest (S3)</option>
+                    <option value="KEYCHAIN">Keychain / Merch</option>
+                    <option value="PRINT">Extra Print</option>
+                    <option value="DRINK">Soft Drink</option>
+                </select>
+            </div>
+            <button class="btn-nav" onclick="muatDataAdmin()" style="background: #ff9500; border: none; color: white;">🔄 Segarkan</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Waktu</th>
+                        <th>Pelanggan</th>
+                        <th>WhatsApp</th>
+                        <th>Studio / Produk</th>
+                        <th>Org</th>
+                        <th>Bayar</th>
+                        <th>Total (Rp)</th>
+                        <th>Status</th>
+                        <th style="text-align: center;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabel-admin-body">
+                    <tr><td colspan="9" style="text-align: center; opacity: 0.5; padding: 25px;">Memuat data antrean dari server...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script>
-    const urlScript = "https://script.google.com/macros/s/AKfycbwPdoH2h6VZLGb_LBeIO8Fi1yBrmY8Efm2hWry_9myk6mCbSkQqi6WQOHaXxIxk43BAjQ/exec";
-    let dataSeluruhnya = []; 
-    let tampilkanSemua = false; // Mode Toggle
+    const SUPABASE_URL = 'https://jxlpoqjfblnjxcfbnkjf.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4bHBvcWpmYmxuanhjZmJua2pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODI0NzYsImV4cCI6MjA5ODY1ODQ3Nn0.iJpxBgGtnjYNui7YdoLnrvfiL20pdGb2mLdUUvaGqJU'; 
+    const dbKlien = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    function formatNomorWA(nomor) {
-        if (!nomor) return "";
-        let noBersih = String(nomor).replace(/[^0-9]/g, '');
-        if (noBersih.startsWith('0')) noBersih = '62' + noBersih.substring(1);
-        return noBersih;
-    }
+    let cacheDataTransaksi = [];
 
-    function parseTanggal(rawDate) {
-        if (!rawDate) return null;
-        let strDate = String(rawDate).trim();
-        if (strDate.includes('T')) {
-            const d = new Date(strDate);
-            if (!isNaN(d)) return d;
-        }
-        const parts = strDate.replace(/-/g, '/').split('/');
-        if (parts.length >= 3) {
-            let year = parts[2].split(' ')[0], month = parts[1], day = parts[0].split(' ')[0];
-            if (parts[0].length === 4) { year = parts[0]; day = parts[2].split(' ')[0]; }
-            const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-            if (!isNaN(d)) return d;
-        }
-        return null;
-    }
-
-    function toggleMode() {
-        tampilkanSemua = !tampilkanSemua;
-        document.getElementById('btn-toggle').innerText = tampilkanSemua ? "📅 Filter Hari Ini Saja" : "📂 Tampilkan Semua Data";
-        renderTabel(); // Render ulang tanpa fetch
-    }
-
-    async function ambilDataDariSheet() {
+    async function muatDataAdmin() {
         try {
-            const urlAntiCache = urlScript + "?v=" + new Date().getTime();
-            const response = await fetch(urlAntiCache);
-            const resJson = await response.json();
+            document.getElementById('sub-info').innerText = "Menarik data terbaru... ⏳";
             
-            // Log ke konsol browser untuk Anda bisa cek
-            console.log("Data Mentah dari Server:", resJson);
-            
-            dataSeluruhnya = resJson.transaksi || [];
-            
-            const d = new Date();
-            document.getElementById('tgl-skrg').innerText = "Hari ini: " + d.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            
-            renderTabel();
-        } catch (error) {
-            console.error(error);
-            document.getElementById('table-admin').innerHTML = "<tr><td colspan='5' style='color:#ff8a80; text-align:center;'>Gagal sinkronisasi. Cek URL Script atau Internet.</td></tr>";
+            const { data, error } = await dbKlien
+                .from('transaksi')
+                .select('*')
+                .order('id', { ascending: false });
+
+            if (error) throw error;
+
+            cacheDataTransaksi = data || [];
+            tampilkanTabel(cacheDataTransaksi);
+            document.getElementById('sub-info').innerText = `Total ${cacheDataTransaksi.length} data terekam di database.`;
+
+        } catch (e) {
+            console.error(e);
+            document.getElementById('sub-info').innerText = "❌ Gagal terhubung ke database Supabase.";
+            document.getElementById('tabel-admin-body').innerHTML = `<tr><td colspan="9" style="text-align: center; color: #ff8a80; padding: 20px;">Gagal memuat data. Periksa koneksi Anda.</td></tr>`;
         }
     }
 
-    function renderTabel() {
-        const tableBody = document.getElementById('table-admin');
-        const d = new Date();
-        const batasAwal = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
-        const batasAkhir = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
-
-        let dataYangDitampilkan = [];
-
-        if (tampilkanSemua) {
-            // Ambil semua data (maksimal 50 baris terakhir agar tidak berat)
-            dataYangDitampilkan = [...dataSeluruhnya].slice(-50);
-        } else {
-            // Filter hanya hari ini, dengan mencari nilai tanggal di kolom manapun jika "tanggal" kosong
-            dataSeluruhnya.forEach(item => {
-                // Trik: Coba ambil dari properti 'tanggal', 'Tanggal', 'waktu', atau kolom pertama (Object.values(item)[0])
-                const rawDate = item.tanggal || item.Tanggal || item.waktu || item.Waktu || item.timestamp || Object.values(item)[0];
-                const tglData = parseTanggal(rawDate);
-                
-                if (tglData) {
-                    tglData.setHours(12, 0, 0, 0);
-                    if (tglData >= batasAwal && tglData <= batasAkhir) {
-                        item._rawDateDisplay = rawDate; // Simpan teks asli untuk diintip
-                        dataYangDitampilkan.push(item);
-                    }
-                }
-            });
-        }
-
-        tableBody.innerHTML = "";
-
-        if (dataYangDitampilkan.length === 0) {
-            const pesan = tampilkanSemua ? "Data di Google Sheets KOSONG!" : "Belum ada pendaftaran HARI INI (Atau format tanggal di Sheets salah).";
-            tableBody.innerHTML = `<tr><td colspan='5' style='text-align:center; padding:40px; opacity:0.8;'>${pesan}</td></tr>`;
+    function tampilkanTabel(dataList) {
+        const tbody = document.getElementById('tabel-admin-body');
+        
+        if (!dataList || dataList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; opacity: 0.5; padding: 25px;">Tidak ada data ditemukan.</td></tr>`;
             return;
         }
 
-        dataYangDitampilkan.reverse().forEach((item) => {
-            const statusRaw = item.status || item.Status || "";
-            const status = String(statusRaw).trim();
-            const barisAsli = dataSeluruhnya.indexOf(item) + 2;
-            
-            // Ambil nama dan WA dengan pertahanan maksimal (jaga-jaga nama kolom huruf besar)
-            const nomorAsli = item.wa || item.WA || item.WhatsApp || "";
-            const noWA = formatNomorWA(nomorAsli);
-            const namaPelanggan = item.nama || item.Nama || "Pelanggan";
-            const temaStudio = item.tema || item.Tema || "-";
-            
-            // Tampilkan teks tanggal asli yang dikirim server
-            const waktuTampil = item._rawDateDisplay || item.tanggal || item.Tanggal || Object.values(item)[0] || "Kosong";
+        let html = "";
+        dataList.forEach(t => {
+            const statusStr = String(t.status || "Selesai").trim();
+            const isMenunggu = statusStr.toLowerCase().includes("menunggu");
+            const badgeClass = isMenunggu ? "badge-menunggu" : "badge-selesai";
+            const totalAngka = parseInt(t.total || 0).toLocaleString('id-ID');
 
-            let tombolWA = "";
-            if (noWA.length > 8) { 
-                const pesanEncoded = encodeURIComponent(`Halo ${namaPelanggan},\nTerima kasih sudah berfoto di Revolusi Studio! 📸\nBerikut link Google Drive kakak:\n\n[Paste Link Di Sini]`);
-                tombolWA = `<a href="https://wa.me/${noWA}?text=${pesanEncoded}" target="_blank" class="btn-action btn-wa">💬 Chat WA</a>`;
-            }
-
-            let actionContent = "";
-            let rowOpacity = "1";
-
-            if (status.toLowerCase() === "menunggu" || status === "") {
-                actionContent = `
-                    ${tombolWA}
-                    <button class="btn-action btn-selesai" onclick="updateStatus(${barisAsli}, 'Selesai')">Selesai</button>
-                    <button class="btn-action btn-batal" onclick="updateStatus(${barisAsli}, 'Batal')">Batal</button>
-                `;
-            } else {
-                rowOpacity = "0.8"; 
-                const color = status.toLowerCase() === "selesai" ? "#34C759" : "#FF3B30";
-                actionContent = `${tombolWA} <span class="status-badge" style="background:${color}22; color:${color}">${status}</span>`;
-            }
-
-            tableBody.innerHTML += `
-                <tr style="opacity: ${rowOpacity}">
-                    <td style="font-size: 11px; opacity: 0.6;">${waktuTampil}</td>
-                    <td><strong>${namaPelanggan}</strong><br><small style="color: #85e09b;">${nomorAsli}</small></td>
-                    <td><span style="font-size:13px;">${temaStudio}</span></td>
-                    <td style="font-weight: 600;">${status}</td>
-                    <td>${actionContent}</td>
+            html += `
+                <tr>
+                    <td style="white-space: nowrap;">${t.tanggal || '-'}<br><span style="font-size:10px; opacity:0.5;">#${t.id}</span></td>
+                    <td><strong>${t.nama || '-'}</strong></td>
+                    <td style="white-space: nowrap;">${t.wa && t.wa !== '-' ? `<a href="https://wa.me/68${t.wa.replace(/^0+/, '')}" target="_blank" style="color: #85e09b; text-decoration:none;">📱 ${t.wa}</a>` : '-'}</td>
+                    <td><span style="background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 6px; font-size: 11px; white-space: nowrap;">${t.tema || '-'}</span></td>
+                    <td>${t.jumlah || 1}</td>
+                    <td>${t.pembayaran || 'Cash'}</td>
+                    <td style="font-weight: bold; color: #80c1ff; white-space: nowrap;">Rp ${totalAngka}</td>
+                    <td><span class="badge ${badgeClass}">${statusStr}</span></td>
+                    <td style="text-align: center;">
+                        <div class="aksi-group">
+                            <button class="btn-aksi btn-selesai" onclick="ubahStatus(${t.id}, 'Selesai')">✅ Selesai</button>
+                            <button class="btn-aksi btn-hapus" onclick="hapusData(${t.id})">🗑️ Hapus</button>
+                        </div>
+                    </td>
                 </tr>
             `;
         });
+
+        tbody.innerHTML = html;
     }
 
-    async function updateStatus(nomorBaris, statusBaru) {
-        if (!confirm("Ubah status menjadi " + statusBaru + "?")) return;
-        const btn = event.target;
-        const teksAsli = btn.innerText;
-        btn.innerText = "..."; btn.disabled = true;
+    function filterData() {
+        const keyword = document.getElementById('cariNama').value.toLowerCase();
+        const studioFilter = document.getElementById('filterStudio').value;
+
+        const hasilFilter = cacheDataTransaksi.filter(t => {
+            const namaMatch = String(t.nama || "").toLowerCase().includes(keyword) || String(t.wa || "").includes(keyword);
+            
+            if (studioFilter === "ALL") return namaMatch;
+            
+            const temaUpper = String(t.tema || "").toUpperCase();
+            return namaMatch && temaUpper.includes(studioFilter.toUpperCase());
+        });
+
+        tampilkanTabel(hasilFilter);
+    }
+
+    async function ubahStatus(id, statusBaru) {
+        if (!confirm(`Ubah status transaksi #${id} menjadi "${statusBaru}"?`)) return;
 
         try {
-            const resp = await fetch(urlScript, { method: 'POST', body: JSON.stringify({ type: "update", index: nomorBaris, status: statusBaru }) });
-            if ((await resp.text()).includes("Sukses")) ambilDataDariSheet();
-            else alert("Gagal update!");
-        } catch (e) { alert("Kesalahan koneksi!"); }
-        finally { btn.innerText = teksAsli; btn.disabled = false; }
+            const { error } = await dbKlien
+                .from('transaksi')
+                .update({ status: statusBaru })
+                .eq('id', id);
+
+            if (error) throw error;
+            muatDataAdmin();
+        } catch (e) {
+            alert("Gagal mengubah status: " + e.message);
+        }
     }
 
-    ambilDataDariSheet();
-    setInterval(ambilDataDariSheet, 30000); // Refresh otomatis 30 detik
-</script>
+    async function hapusData(id) {
+        if (!confirm(`⚠️ PERINGATAN: Apakah Anda yakin ingin menghapus permanen data transaksi #${id} ini?`)) return;
 
+        try {
+            const { error } = await dbKlien
+                .from('transaksi')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            muatDataAdmin();
+        } catch (e) {
+            alert("Gagal menghapus data: " + e.message);
+        }
+    }
+
+    window.onload = muatDataAdmin;
+</script>
 </body>
 </html>

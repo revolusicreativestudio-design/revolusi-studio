@@ -4,219 +4,206 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitor Antrean - Revolusi Studio</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.12);
-            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
             --ios-blue: #007AFF;
-            --ios-red: #FF3B30;
-            --text-white: #ffffff;
+            --ios-green: #34C759;
+            --text-main: #ffffff;
         }
 
         body {
-    margin: 0;
-    /* Tambahkan padding di sini untuk memberi jarak dari tepi layar */
-    padding: 40px; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-image: url('https://images.unsplash.com/photo-1647346425804-34383b95644b?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    color: var(--text-white);
-    height: 100vh;
-    display: flex;
-    /* Perbesar gap (jarak antar kotak) menjadi 40px */
-    gap: 40px; 
-    box-sizing: border-box;
-    overflow: hidden;
-}
-
-.studio-card {
-    flex: 1;
-    background: var(--glass);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border: 1px solid var(--glass-border);
-    border-radius: 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-    text-align: center;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-    position: relative;
-    transition: all 0.5s ease;
-    /* Tambahkan margin bawah opsional jika monitornya vertikal */
-    margin-bottom: 10px; 
-}
-
-        /* Variasi warna border halus untuk identitas studio */
-        .vintage { border-top: 8px solid var(--ios-red); }
-        .blue-room { border-top: 8px solid var(--ios-blue); }
-
-        .studio-label {
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            opacity: 0.9;
-            margin-bottom: 5px;
+            margin: 0; padding: 30px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #050505;
+            background-image: radial-gradient(circle at top, #1a1a2e 0%, #050505 80%);
+            color: var(--text-main);
+            min-height: 100vh;
+            box-sizing: border-box;
+            display: flex; flex-direction: column;
         }
 
-        .theme-name {
-            font-size: 1rem;
-            opacity: 0.6;
-            margin-bottom: 30px;
+        .monitor-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 30px;
+        }
+        .monitor-header h1 { margin: 0; font-size: 38px; font-weight: 900; letter-spacing: -1px; }
+        .monitor-header .jam { font-size: 32px; font-weight: 700; color: var(--ios-blue); }
+
+        /* Grid Utama Dua Studio */
+        .grid-studio {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 30px; flex: 1;
         }
 
-        .status-now {
-            font-size: 1.2rem;
-            font-weight: 500;
-            background: rgba(255,255,255,0.15);
-            padding: 8px 20px;
-            border-radius: 50px;
-            margin-bottom: 10px;
+        .studio-card {
+            background: var(--glass); backdrop-filter: blur(30px);
+            border: 2px solid var(--glass-border); border-radius: 35px;
+            padding: 35px; box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+            display: flex; flex-direction: column;
         }
 
-        .queue-number {
-            font-size: 10rem;
-            font-weight: 800;
-            line-height: 1;
-            margin: 10px 0;
-            text-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            font-variant-numeric: tabular-nums;
+        .studio-title {
+            font-size: 28px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+            margin: 0 0 25px 0; padding-bottom: 15px; border-bottom: 2px solid rgba(255,255,255,0.1);
         }
+        .s1-color { color: #ffd699; border-color: rgba(255, 214, 153, 0.2); }
+        .s2-color { color: #80c1ff; border-color: rgba(128, 193, 255, 0.2); }
 
-        .customer-name {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+        /* Sesi Pemanggilan Aktif */
+        .now-serving {
+            background: rgba(255,255,255,0.05); border-radius: 25px; padding: 25px; text-align: center;
+            margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05);
         }
+        .now-serving h3 { margin: 0; font-size: 14px; opacity: 0.6; text-transform: uppercase; letter-spacing: 2px; }
+        .now-serving .nomor { font-size: 110px; font-weight: 900; color: var(--ios-green); margin: 10px 0; text-shadow: 0 0 30px rgba(52, 199, 89, 0.3); }
+        .now-serving .nama { font-size: 24px; font-weight: 700; opacity: 0.9; }
 
-        .ppl-count {
-            font-size: 1.4rem;
-            opacity: 0.7;
-            margin-bottom: 40px;
+        /* Sesi Daftar Tunggu */
+        .waiting-list { flex: 1; overflow: hidden; }
+        .waiting-list h4 { margin: 0 0 15px 0; font-size: 16px; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .waiting-box {
+            display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow: hidden;
         }
-
-        .footer-info {
-            width: 100%;
-            background: rgba(255,255,255,0.08);
-            padding: 20px;
-            border-radius: 25px;
-            font-size: 1.2rem;
-            border: 1px solid var(--glass-border);
+        .waiting-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05);
+            padding: 15px 25px; border-radius: 16px; animation: slideIn 0.5s ease;
         }
+        .waiting-item .no-tggu { font-size: 24px; font-weight: 800; opacity: 0.8; }
+        .waiting-item .nama-tggu { font-size: 18px; font-weight: 600; }
 
-        .waiting-count {
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: var(--ios-blue);
-        }
-
-        /* Animasi berdenyut pelan agar monitor terlihat "hidup" */
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.9; }
-            50% { transform: scale(1.02); opacity: 1; }
-            100% { transform: scale(1); opacity: 0.9; }
-        }
-
-        .active-pulse { animation: pulse 3s infinite ease-in-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="studio-card vintage" id="card-1">
-        <div class="studio-label">STUDIO 1</div>
-        <div class="theme-name">CLASSIC RETRO</div>
-        <div class="status-now">SEKARANG</div>
-        <div id="num-1" class="queue-number">---</div>
-        <div id="name-1" class="customer-name">KOSONG</div>
-        <div id="ppl-1" class="ppl-count">Ready to Shoot</div>
-        <div class="footer-info">
-            Sisa Antrean: <span id="count-1" class="waiting-count">0</span>
+    <div class="monitor-header">
+        <div>
+            <h1>REVOLUSI STUDIO</h1>
+            <span style="opacity: 0.6; font-size: 16px;" id="tgl-hari-ini">Memuat tanggal...</span>
         </div>
+        <div class="jam" id="live-jam">00:00:00</div>
     </div>
 
-    <div class="studio-card blue-room" id="card-2">
-        <div class="studio-label">STUDIO 2</div>
-        <div class="theme-name">BLUE ROOM</div>
-        <div class="status-now">SEKARANG</div>
-        <div id="num-2" class="queue-number">---</div>
-        <div id="name-2" class="customer-name">KOSONG</div>
-        <div id="ppl-2" class="ppl-count">Ready to Shoot</div>
-        <div class="footer-info">
-            Sisa Antrean: <span id="count-2" class="waiting-count">0</span>
+    <div class="grid-studio">
+        <div class="studio-card">
+            <h2 class="studio-title s1-color">📸 Studio 1 - Classic Retro</h2>
+            
+            <div class="now-serving">
+                <h3>Sedang Difoto / Panggilan</h3>
+                <div class="nomor" id="s1-now-nomor">---</div>
+                <div class="nama" id="s1-now-nama">Belum Ada Sesi</div>
+            </div>
+
+            <div class="waiting-list">
+                <h4>Antrean Menunggu</h4>
+                <div class="waiting-box" id="s1-box-tunggu">
+                    <div style="text-align: center; opacity: 0.4; padding-top: 20px;">Kosong</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="studio-card">
+            <h2 class="studio-title s2-color">🔷 Studio 2 - Blue Room</h2>
+            
+            <div class="now-serving">
+                <h3>Sedang Difoto / Panggilan</h3>
+                <div class="nomor" id="s2-now-nomor">---</div>
+                <div class="nama" id="s2-now-nama">Belum Ada Sesi</div>
+            </div>
+
+            <div class="waiting-list">
+                <h4>Antrean Menunggu</h4>
+                <div class="waiting-box" id="s2-box-tunggu">
+                    <div style="text-align: center; opacity: 0.4; padding-top: 20px;">Kosong</div>
+                </div>
+            </div>
         </div>
     </div>
 
 <script>
-    const urlScript = "https://script.google.com/macros/s/AKfycbwPdoH2h6VZLGb_LBeIO8Fi1yBrmY8Efm2hWry_9myk6mCbSkQqi6WQOHaXxIxk43BAjQ/exec";
+    const SUPABASE_URL = 'https://jxlpoqjfblnjxcfbnkjf.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4bHBvcWpmYmxuanhjZmJua2pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODI0NzYsImV4cCI6MjA5ODY1ODQ3Nn0.iJpxBgGtnjYNui7YdoLnrvfiL20pdGb2mLdUUvaGqJU'; 
+    const dbKlien = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function muatAntrean() {
+    // Live Jam & Tanggal
+    setInterval(() => {
+        const d = new Date();
+        document.getElementById('live-jam').innerText = d.toTimeString().split(' ')[0];
+    }, 1000);
+
+    async function muatMonitorLive() {
         try {
-            const res = await fetch(urlScript);
-            const resJson = await res.json();
-            const data = resJson.transaksi || [];
-            
             const d = new Date();
-            const tglHariIni = d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
+            const tglToday = d.getDate().toString().padStart(2, '0') + "/" + (d.getMonth() + 1).toString().padStart(2, '0') + "/" + d.getFullYear();
+            document.getElementById('tgl-hari-ini').innerText = d.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-            // LOGIKA FILTER STUDIO 1
-            const semuaS1 = data.filter(item => item.tema === "Classic Retro" && item.tanggal === tglHariIni);
-            const antreanS1 = semuaS1.filter(item => item.status === "Menunggu");
-            const selesaiS1 = semuaS1.length - antreanS1.length;
+            // Tarik seluruh transaksi hari ini (Urut dari pendaftar pertama)
+            const { data: trx, error } = await dbKlien.from('transaksi').select('*').eq('tanggal', tglToday).order('id', { ascending: true });
+            if (error) throw error;
 
-            // LOGIKA FILTER STUDIO 2
-            const semuaS2 = data.filter(item => item.tema === "Blue Room" && item.tanggal === tglHariIni);
-            const antreanS2 = semuaS2.filter(item => item.status === "Menunggu");
-            const selesaiS2 = semuaS2.length - antreanS2.length;
+            let s1TungguHTML = "", s2TungguHTML = "";
+            let s1Active = null, s2Active = null;
+            let countS1 = 0, countS2 = 0;
 
-            // --- UPDATE TAMPILAN S1 ---
-            if (antreanS1.length > 0) {
-                const skr = antreanS1[0];
-                document.getElementById('num-1').innerText = (selesaiS1 + 1).toString().padStart(3, '0');
-                document.getElementById('name-1').innerText = skr.nama;
-                document.getElementById('ppl-1').innerText = skr.jumlah + " ORANG";
-                document.getElementById('count-1').innerText = antreanS1.length - 1;
-                document.getElementById('card-1').classList.add('active-pulse');
+            (trx || []).forEach(item => {
+                const status = String(item.status).trim();
+                
+                if (item.tema === "Classic Retro") {
+                    countS1++;
+                    const nomorAntrean = countS1.toString().padStart(3, '0');
+                    
+                    if (status === "Menunggu" && !s1Active) {
+                        s1Active = { no: nomorAntrean, nama: item.nama };
+                    } else if (status === "Menunggu") {
+                        s1TungguHTML += `<div class="waiting-item"><div class="nama-tggu">${item.nama}</div><div class="no-tggu">${nomorAntrean}</div></div>`;
+                    }
+                } 
+                else if (item.tema === "Blue Room") {
+                    countS2++;
+                    const nomorAntrean = countS2.toString().padStart(3, '0');
+                    
+                    if (status === "Menunggu" && !s2Active) {
+                        s2Active = { no: nomorAntrean, nama: item.nama };
+                    } else if (status === "Menunggu") {
+                        s2TungguHTML += `<div class="waiting-item"><div class="nama-tggu">${item.nama}</div><div class="no-tggu">${nomorAntrean}</div></div>`;
+                    }
+                }
+            });
+
+            // Update Tampilan Studio 1
+            if (s1Active) {
+                document.getElementById('s1-now-nomor').innerText = s1Active.no;
+                document.getElementById('s1-now-nama').innerText = s1Active.nama;
             } else {
-                document.getElementById('num-1').innerText = "---";
-                document.getElementById('name-1').innerText = "KOSONG";
-                document.getElementById('ppl-1').innerText = "Ready to Shoot";
-                document.getElementById('count-1').innerText = "0";
-                document.getElementById('card-1').classList.remove('active-pulse');
+                document.getElementById('s1-now-nomor').innerText = "---";
+                document.getElementById('s1-now-nama').innerText = "Selesai / Kosong";
             }
+            document.getElementById('s1-box-tunggu').innerHTML = s1TungguHTML || '<div style="text-align: center; opacity: 0.4; padding-top: 20px;">Tidak ada antrean</div>';
 
-            // --- UPDATE TAMPILAN S2 ---
-            if (antreanS2.length > 0) {
-                const skr = antreanS2[0];
-                document.getElementById('num-2').innerText = (selesaiS2 + 1).toString().padStart(3, '0');
-                document.getElementById('name-2').innerText = skr.nama;
-                document.getElementById('ppl-2').innerText = skr.jumlah + " ORANG";
-                document.getElementById('count-2').innerText = antreanS2.length - 1;
-                document.getElementById('card-2').classList.add('active-pulse');
+            // Update Tampilan Studio 2
+            if (s2Active) {
+                document.getElementById('s2-now-nomor').innerText = s2Active.no;
+                document.getElementById('s2-now-nama').innerText = s2Active.nama;
             } else {
-                document.getElementById('num-2').innerText = "---";
-                document.getElementById('name-2').innerText = "KOSONG";
-                document.getElementById('ppl-2').innerText = "Ready to Shoot";
-                document.getElementById('count-2').innerText = "0";
-                document.getElementById('card-2').classList.remove('active-pulse');
+                document.getElementById('s2-now-nomor').innerText = "---";
+                document.getElementById('s2-now-nama').innerText = "Selesai / Kosong";
             }
+            document.getElementById('s2-box-tunggu').innerHTML = s2TungguHTML || '<div style="text-align: center; opacity: 0.4; padding-top: 20px;">Tidak ada antrean</div>';
 
-        } catch (e) { console.error("Monitor Error:", e); }
+        } catch (e) {
+            console.error("Gagal refresh monitor:", e);
+        }
     }
 
-    // Refresh tiap 10 detik agar sinkron dengan Admin
-    setInterval(muatAntrean, 10000);
-    muatAntrean();
+    muatMonitorLive();
+    // Refresh otomatis setiap 5 detik agar super-live!
+    setInterval(muatMonitorLive, 5000);
 </script>
-
 </body>
 </html>

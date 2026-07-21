@@ -3,150 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pilih Periode - Revolusi Studio</title>
+    <title>Pilih Laporan - Revolusi Studio</title>
     <style>
-        :root {
-            --glass: rgba(255, 255, 255, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.25);
-            --ios-blue: #007AFF;
-            --text-main: #ffffff;
-        }
-
+        :root { --glass: rgba(255, 255, 255, 0.15); --glass-border: rgba(255, 255, 255, 0.25); --ios-blue: #007AFF; --text-main: #ffffff; }
         body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-image: url('https://images.unsplash.com/photo-1647346425804-34383b95644b?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: var(--text-main);
+            margin: 0; padding: 20px; font-family: -apple-system, sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1614851099511-773084f6911d?q=80&w=1170&auto=format&fit=crop');
+            background-size: cover; background-position: center; display: flex; justify-content: center; align-items: center; height: 100vh;
         }
-
-        .glass-container {
-            width: 90%;
-            max-width: 400px;
-            background: var(--glass);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-border);
-            border-radius: 35px;
-            padding: 40px 30px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-            text-align: center;
+        .glass-card {
+            background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--glass-border);
+            border-radius: 25px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); text-align: center; width: 100%; max-width: 400px; color: white;
         }
-
-        h1 { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
-        p.subtitle { font-size: 14px; opacity: 0.8; margin-bottom: 30px; }
-
+        h2 { margin: 0 0 10px 0; font-size: 24px; font-weight: 700; }
+        p { margin: 0 0 25px 0; opacity: 0.8; font-size: 14px; }
         .form-group { text-align: left; margin-bottom: 20px; }
-        label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 8px; margin-left: 5px; opacity: 0.9; }
-
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; margin-left: 5px; opacity: 0.9; }
         input[type="date"] {
-            width: 100%;
-            padding: 14px 18px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 16px;
-            color: white;
-            font-size: 16px;
-            font-family: inherit;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
+            width: 100%; padding: 14px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px; color: white; font-size: 16px; box-sizing: border-box; text-align: center; color-scheme: dark;
         }
-
-        input[type="date"]:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.3);
-            border-color: var(--ios-blue);
-            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
-        }
-
-        /* Mengubah warna ikon kalender bawaan browser agar terlihat di background gelap */
-        ::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            opacity: 0.8;
-            cursor: pointer;
-        }
-
+        input:focus { outline: none; border-color: var(--ios-blue); background: rgba(0,0,0,0.4); }
         button {
-            width: 100%;
-            padding: 16px;
-            background: var(--ios-blue);
-            color: white;
-            border: none;
-            border-radius: 18px;
-            font-size: 17px;
-            font-weight: 600;
-            margin-top: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
+            width: 100%; padding: 16px; background: var(--ios-blue); color: white; border: none; border-radius: 15px;
+            font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
         }
-
         button:active { transform: scale(0.96); }
-
-        .btn-back {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--glass-border);
-            box-shadow: none;
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
 
-<div class="glass-container">
-    <div style="font-size: 40px; margin-bottom: 10px;">📅</div>
-    <h1>Periode Laporan</h1>
-    <p class="subtitle">Tentukan rentang tanggal laporan keuangan yang ingin ditampilkan.</p>
+    <div class="glass-card">
+        <h2>📊 Filter Laporan</h2>
+        <p>Pilih rentang waktu untuk Dashboard Keuangan</p>
 
-    <div class="form-group">
-        <label>Mulai Tanggal</label>
-        <input type="date" id="tglMulai" required>
+        <div class="form-group">
+            <label>Tanggal Mulai</label>
+            <input type="date" id="tgl-mulai" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Tanggal Selesai</label>
+            <input type="date" id="tgl-selesai" required>
+        </div>
+
+        <button onclick="terapkanFilter()">Lihat Dashboard &rarr;</button>
+        
+        <div style="margin-top: 20px; font-size: 12px; opacity: 0.6; font-weight: bold; color: #85e09b;">
+            🚀 Powered by Supabase (PostgreSQL)
+        </div>
     </div>
 
-    <div class="form-group">
-        <label>Sampai Tanggal</label>
-        <input type="date" id="tglSelesai" required>
-    </div>
+    <script>
+        // Set default: Bulan ini (Tanggal 1 s/d Hari ini)
+        const d = new Date();
+        // Mengatasi masalah timezone pada bulan saat setup default value
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        
+        document.getElementById('tgl-mulai').value = `${yyyy}-${mm}-01`;
+        document.getElementById('tgl-selesai').value = `${yyyy}-${mm}-${dd}`;
 
-    <button onclick="bukaLaporan()">Lihat Laporan</button>
-    <button onclick="window.location.href='index.html'" class="btn-back">Kembali ke Menu</button>
-</div>
+        window.terapkanFilter = function() {
+            const mulai = document.getElementById('tgl-mulai').value;
+            const selesai = document.getElementById('tgl-selesai').value;
 
-<script>
-    // Set default tanggal ke hari ini
-    const hariIni = new Date().toISOString().split('T')[0];
-    document.getElementById('tglMulai').value = hariIni;
-    document.getElementById('tglSelesai').value = hariIni;
+            if(!mulai || !selesai) {
+                alert("⚠️ Pilih tanggalnya dulu, Bos!");
+                return;
+            }
 
-    function bukaLaporan() {
-        const mulai = document.getElementById('tglMulai').value;
-        const selesai = document.getElementById('tglSelesai').value;
-
-        if (!mulai || !selesai) {
-            alert("Pilih tanggalnya dulu ya, Bos!");
-            return;
+            localStorage.setItem("filterMulai", mulai);
+            localStorage.setItem("filterSelesai", selesai);
+            window.location.href = "laporan.html"; // Lompat ke Dashboard
         }
-
-        if (new Date(mulai) > new Date(selesai)) {
-            alert("Tanggal mulai tidak boleh lebih dari tanggal selesai!");
-            return;
-        }
-
-        // Simpan pilihan tanggal ke memori browser
-        localStorage.setItem("filterMulai", mulai);
-        localStorage.setItem("filterSelesai", selesai);
-
-        // Langsung arahkan ke halaman laporan utama
-        window.location.href = "laporan.html";
-    }
-</script>
-
+    </script>
 </body>
 </html>

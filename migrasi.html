@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Pemulihan Data - Revolusi Studio</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #111; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 30px; width: 100%; max-width: 550px; text-align: center; }
+        button { background: #FF9500; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        button:disabled { background: #555; cursor: not-allowed; }
+        .log-box { background: black; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; font-family: monospace; font-size: 11px; height: 180px; overflow-y: auto; color: #85e09b; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>🤖 Robot Pemulihan V2</h1>
+    <p>Menyedot data lama dengan penanganan error mendetail.</p>
+    <button id="btn-start" onclick="mulaiMigrasi()">🚀 MULAI PEMULIHAN</button>
+    <div class="log-box" id="log-box">> Sistem siap... Menunggu perintah.</div>
+</div>
+
+<script>
+    const URL_GAS_LAMA = "https://script.google.com/macros/s/AKfycbwPdoH2h6VZLGb_LBeIO8Fi1yBrmY8Efm2hWry_9myk6mCbSkQqi6WQOHaXxIxk43BAjQ/exec";
+    const SUPABASE_URL = 'https://jxlpoqjfblnjxcfbnkjf.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4bHBvcWpmYmxuanhjZmJua2pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODI0NzYsImV4cCI6MjA5ODY1ODQ3Nn0.iJpxBgGtnjYNui7YdoLnrvfiL20pdGb2mLdUUvaGqJU'; 
+    
+    const dbKlien = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    function tulisLog(teks, isError = false) {
+        const box = document.getElementById('log-box');
+        const warna = isError ? '#ff8a80' : '#85e09b';
+        box.innerHTML += `<br><span style="color: ${warna};">> ${teks}</span>`;
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function pecahArray(array, ukuran) {
+        let hasil = [];
+        for (let i = 0; i < array.length; i += ukuran) hasil.push(array.slice(i, i + ukuran));
+        return hasil;
+    }
+
+    async function mulaiMigrasi() {
+        const btn = document.getElementById('btn-start');
+        btn.disabled = true; btn.innerText = "Robot Bekerja... ⏳";
+        
+        try {
+            tulisLog("Menghubungkan ke Google Sheets lama...");
+            const response = await fetch(URL_GAS_LAMA);
+            const dataLama = await response.json();
+            const transaksiLama = dataLama.transaksi || [];
+            
+            tulisLog(`Berhasil mengambil ${transaksiLama.length} baris data dari Google.`);
+
+            let dataSiapTembak = [];
+            transaksiLama.forEach(item => {
+                if (item.nama && item.nama.toLowerCase() !== "nama") {
+                    dataSiapTembak.push({
+                        tanggal: String(item.tanggal || "01/01/2026"),
+                        nama: String(item.nama || "Pelanggan"),
+                        wa: String(item.wa || "-"),
+                        status: String(item.status || "Selesai"),
+                        tema: String(item.tema || "Classic Retro"),
+                        jumlah: parseInt(item.jumlah) || 1,
+                        pembayaran: String(item.pembayaran || "Cash"),
+                        total: parseInt(item.total) || 0
+                    });
+                }
+            });
+
+            tulisLog(`Data bersih siap dikirim: ${dataSiapTembak.length} baris.`);
+            const potonganData = pecahArray(dataSiapTembak, 50); // Kita kecilkan jadi per 50 baris agar lebih aman
+            
+            let totalSukses = 0;
+            for (let i = 0; i < potonganData.length; i++) {
+                const { error } = await dbKlien.from('transaksi').insert(potonganData[i]);
+                if (error) {
+                    tulisLog(`❌ GAGAL batch ${i+1}: ${error.message} (Detail: ${error.details || '-'})`, true);
+                } else {
+                    totalSukses += potonganData[i].length;
+                    tulisLog(`✅ Batch ${i+1} masuk... (${totalSukses} baris terkumpul)`);
+                }
+            }
+
+            tulisLog("🎉 PROSES PEMULIHAN SELESAI!");
+            alert(`SUKSES! ${totalSukses} data berhasil dipulihkan ke Supabase.`);
+            btn.innerText = "SELESAI!";
+
+        } catch (error) {
+            tulisLog("❌ ERROR FATAL: " + error.message, true);
+            btn.innerText = "GAGAL. COBA LAGI."; btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>

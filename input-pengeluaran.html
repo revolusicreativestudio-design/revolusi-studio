@@ -3,69 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Input Pengeluaran Harian - Revolusi Studio</title>
+    <title>Input Pengeluaran Harian</title>
+    
+    <!-- 🚀 WAJIB: Library Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.25);
-            --ios-red: #FF3B30;
-            --ios-green: #34C759;
-            --text-main: #ffffff;
+            --glass: rgba(255, 255, 255, 0.15); --glass-border: rgba(255, 255, 255, 0.25);
+            --ios-red: #FF3B30; --text-main: #ffffff;
         }
-
         body {
-            margin: 0; padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: var(--text-main); background: transparent; 
+            margin: 0; padding: 20px; font-family: -apple-system, sans-serif;
+            color: var(--text-main); background: #1a1a1a;
+            background-image: url('https://images.unsplash.com/photo-1614851099511-773084f6911d?q=80&w=1170&auto=format&fit=crop');
+            background-size: cover; background-attachment: fixed;
         }
-
         .container { max-width: 800px; margin: 0 auto; }
-
         .glass-card {
-            background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            background: var(--glass); backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border); border-radius: 25px; padding: 30px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.2); text-align: center;
         }
-
         .header h2 { margin: 0 0 5px 0; font-size: 24px; font-weight: 800; }
         .header p { margin: 0 0 25px 0; opacity: 0.8; font-size: 14px; }
-
         .form-group { text-align: left; margin-bottom: 20px; }
-        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; margin-left: 5px; opacity: 0.9; }
-
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; margin-left: 5px; }
         input {
             width: 100%; padding: 14px 18px; background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 15px; color: white; font-size: 16px;
-            box-sizing: border-box; transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 15px; color: white;
+            font-size: 16px; box-sizing: border-box; transition: 0.3s;
         }
         input:focus { outline: none; background: rgba(0, 0, 0, 0.4); border-color: var(--ios-red); }
-        
-        /* Grid untuk Checklist Kategori */
         .grid-kategori {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-            text-align: left;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px; margin-bottom: 25px; text-align: left;
         }
         .item-kategori {
             background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px; padding: 15px; transition: 0.3s;
+            border-radius: 15px; padding: 15px;
         }
-        .item-kategori:hover { background: rgba(255, 255, 255, 0.1); }
-        .item-kategori label { color: #ff8a80; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-        .item-kategori input { font-size: 20px; font-weight: bold; color: #85e09b; padding: 10px 15px; }
-
+        .item-kategori label { color: #ff8a80; font-size: 12px; text-transform: uppercase; }
+        .item-kategori input { font-size: 20px; font-weight: bold; color: #85e09b; padding: 10px; }
         button {
             width: 100%; padding: 16px; background: var(--ios-red); color: white;
-            border: none; border-radius: 15px; font-size: 16px; font-weight: 600;
-            cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 20px rgba(255, 59, 48, 0.3);
+            border: none; border-radius: 15px; font-size: 16px; font-weight: 600; cursor: pointer;
+            transition: 0.2s; box-shadow: 0 10px 20px rgba(255, 59, 48, 0.3);
         }
-        button:active { transform: scale(0.96); }
-        button:disabled { background: rgba(255,255,255,0.3); cursor: not-allowed; box-shadow: none; }
-
-        #progress-bar { display: none; margin-top: 15px; font-size: 14px; font-weight: bold; color: #85e09b; }
-
+        button:active { transform: scale(0.98); }
+        button:disabled { background: #555; cursor: not-allowed; box-shadow: none; }
     </style>
 </head>
 <body>
@@ -74,7 +60,7 @@
     <div class="glass-card">
         <div class="header">
             <div style="font-size: 40px; margin-bottom: 10px;">📋💸</div>
-            <h2>Checklist Pengeluaran</h2>
+            <h2>Checklist Pengeluaran (Supabase)</h2>
             <p>Wajib diisi semua. Ketik <strong>0</strong> jika tidak ada pengeluaran.</p>
         </div>
 
@@ -85,91 +71,52 @@
             </div>
             
             <div class="grid-kategori">
-                <div class="item-kategori">
-                    <label>1. Gaji Karyawan</label>
-                    <input type="number" id="kat-gaji" min="0" required placeholder="0">
-                </div>
-                <div class="item-kategori">
-                    <label>2. Kebersihan</label>
-                    <input type="number" id="kat-bersih" min="0" required placeholder="0">
-                </div>
-                <div class="item-kategori">
-                    <label>3. Keamanan</label>
-                    <input type="number" id="kat-aman" min="0" required placeholder="0">
-                </div>
-                <div class="item-kategori">
-                    <label>4. Internet</label>
-                    <input type="number" id="kat-inet" min="0" required placeholder="0">
-                </div>
-                <div class="item-kategori">
-                    <label>5. Sewa Lahan</label>
-                    <input type="number" id="kat-lahan" min="0" required placeholder="0">
-                </div>
-                <div class="item-kategori">
-                    <label>6. Sewa Tenda</label>
-                    <input type="number" id="kat-tenda" min="0" required placeholder="0">
-                </div>
-                <div class="item-kategori">
-                    <label>7. Tagihan Listrik</label>
-                    <input type="number" id="kat-listrik" min="0" required placeholder="0">
-                </div>
-                <div class="item-kategori">
-                    <label>8. Tagihan Hutang Usaha</label>
-                    <input type="number" id="kat-hutang" min="0" required placeholder="0">
-                </div>
-                <div class="item-kategori">
-                    <label>9. Bahan (Kertas/Tinta/dll)</label>
-                    <input type="number" id="kat-bahan" min="0" required placeholder="0">
-                </div>
+                <div class="item-kategori"><label>1. Gaji Karyawan</label><input type="number" id="kat-gaji" min="0" required value="0"></div>
+                <div class="item-kategori"><label>2. Kebersihan</label><input type="number" id="kat-bersih" min="0" required value="0"></div>
+                <div class="item-kategori"><label>3. Keamanan</label><input type="number" id="kat-aman" min="0" required value="0"></div>
+                <div class="item-kategori"><label>4. Internet</label><input type="number" id="kat-inet" min="0" required value="0"></div>
+                <div class="item-kategori"><label>5. Sewa Lahan</label><input type="number" id="kat-lahan" min="0" required value="0"></div>
+                <div class="item-kategori"><label>6. Sewa Tenda</label><input type="number" id="kat-tenda" min="0" required value="0"></div>
+                <div class="item-kategori"><label>7. Tagihan Listrik</label><input type="number" id="kat-listrik" min="0" required value="0"></div>
+                <div class="item-kategori"><label>8. Tagihan Hutang</label><input type="number" id="kat-hutang" min="0" required value="0"></div>
+                <div class="item-kategori"><label>9. Bahan (Tinta/dll)</label><input type="number" id="kat-bahan" min="0" required value="0"></div>
             </div>
 
             <button type="submit" id="btnSimpan">📥 SIMPAN SEMUA PENGELUARAN</button>
-            <div id="progress-bar">Menyimpan data...</div>
         </form>
     </div>
 </div>
 
 <script>
-    // =========================================================
-    // ⚠️ GANTI DENGAN URL DEPLOYMENT APPS SCRIPT ANDA ⚠️
-    // =========================================================
-    const urlScript = "https://script.google.com/macros/s/AKfycbwPdoH2h6VZLGb_LBeIO8Fi1yBrmY8Efm2hWry_9myk6mCbSkQqi6WQOHaXxIxk43BAjQ/exec";
+    const SUPABASE_URL = 'https://jxlpoqjfblnjxcfbnkjf.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4bHBvcWpmYmxuanhjZmJua2pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODI0NzYsImV4cCI6MjA5ODY1ODQ3Nn0.iJpxBgGtnjYNui7YdoLnrvfiL20pdGb2mLdUUvaGqJU'; 
+    
+    const dbKlien = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     document.getElementById('tgl-biaya').valueAsDate = new Date();
 
-    // Mapping Kategori
     const daftarKategori = [
-        { id: "kat-gaji", nama: "Gaji Karyawan" },
-        { id: "kat-bersih", nama: "Kebersihan" },
-        { id: "kat-aman", nama: "Keamanan" },
-        { id: "kat-inet", nama: "Internet" },
-        { id: "kat-lahan", nama: "Sewa Lahan" },
-        { id: "kat-tenda", nama: "Sewa Tenda" },
-        { id: "kat-listrik", nama: "Tagihan Listrik" },
-        { id: "kat-hutang", nama: "Tagihan Hutang Usaha" },
+        { id: "kat-gaji", nama: "Gaji Karyawan" }, { id: "kat-bersih", nama: "Kebersihan" },
+        { id: "kat-aman", nama: "Keamanan" }, { id: "kat-inet", nama: "Internet" },
+        { id: "kat-lahan", nama: "Sewa Lahan" }, { id: "kat-tenda", nama: "Sewa Tenda" },
+        { id: "kat-listrik", nama: "Tagihan Listrik" }, { id: "kat-hutang", nama: "Tagihan Hutang Usaha" },
         { id: "kat-bahan", nama: "Bahan" }
     ];
 
     document.getElementById('formPengeluaran').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const btn = document.getElementById('btnSimpan');
-        const progress = document.getElementById('progress-bar');
-        btn.style.display = 'none';
-        progress.style.display = 'block';
+        btn.innerText = "Menembak data ke database... 🚀";
+        btn.disabled = true;
 
-        // Format tanggal mutlak DD/MM/YYYY
         const rawDate = document.getElementById('tgl-biaya').value.split('-');
         const tglFormatted = `${rawDate[2]}/${rawDate[1]}/${rawDate[0]}`;
 
-        // Kumpulkan hanya yang nominalnya lebih dari 0
-        let dataYangAkanDikirim = [];
-        
+        let dataYangDikirim = [];
         daftarKategori.forEach(kategori => {
             const nominal = parseInt(document.getElementById(kategori.id).value) || 0;
             if (nominal > 0) {
-                dataYangAkanDikirim.push({
-                    type: "pengeluaran",
+                dataYangDikirim.push({
                     tanggal: tglFormatted,
                     kategori: kategori.nama,
                     keterangan: "Rekap Harian: " + kategori.nama,
@@ -178,55 +125,32 @@
             }
         });
 
-        // Jika semua isian adalah 0
-        if (dataYangAkanDikirim.length === 0) {
-            alert("✅ Laporan selesai! Tidak ada pengeluaran hari ini (semua 0).");
-            btn.style.display = 'block';
-            progress.style.display = 'none';
-            document.getElementById('formPengeluaran').reset();
-            document.getElementById('tgl-biaya').valueAsDate = new Date();
+        if (dataYangDikirim.length === 0) {
+            alert("✅ Selesai! Semua pengeluaran Rp 0 (Tidak ada yang disimpan).");
+            resetForm(btn);
             return;
         }
 
-        // Kirim berurutan agar Google Sheets tidak macet (Anti-Collision)
-        let sukses = 0;
-        let gagal = 0;
-
-        for (let i = 0; i < dataYangAkanDikirim.length; i++) {
-            progress.innerText = `Menyimpan ${i + 1} dari ${dataYangAkanDikirim.length} data... ⏳`;
+        try {
+            const { error } = await dbKlien.from('pengeluaran').insert(dataYangDikirim);
+            if (error) throw error;
             
-            try {
-                const response = await fetch(urlScript, {
-                    method: 'POST',
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify(dataYangAkanDikirim[i])
-                });
-                const hasil = await response.text();
-                if (hasil.toLowerCase().includes("sukses")) {
-                    sukses++;
-                } else {
-                    gagal++;
-                    console.error("Gagal simpan:", dataYangAkanDikirim[i].kategori, hasil);
-                }
-            } catch (err) {
-                gagal++;
-                console.error("Error jaringan:", err);
-            }
-        }
-
-        // Tampilkan hasil akhir
-        progress.style.display = 'none';
-        btn.style.display = 'block';
-
-        if (gagal === 0) {
-            alert(`✅ Selesai! ${sukses} kategori pengeluaran berhasil dicatat ke Google Sheets.`);
-            document.getElementById('formPengeluaran').reset();
-            document.getElementById('tgl-biaya').valueAsDate = new Date();
-        } else {
-            alert(`⚠️ Selesai dengan peringatan.\nBerhasil: ${sukses}\nGagal: ${gagal}\nCoba cek koneksi internet Anda.`);
+            alert(`✅ Sukses! ${dataYangDikirim.length} kategori pengeluaran berhasil dicatat.`);
+            resetForm(btn);
+        } catch (error) {
+            console.error(error);
+            alert("❌ Gagal menyimpan data: " + error.message);
+            btn.innerText = "📥 SIMPAN SEMUA PENGELUARAN";
+            btn.disabled = false;
         }
     });
-</script>
 
+    function resetForm(btn) {
+        document.getElementById('formPengeluaran').reset();
+        document.getElementById('tgl-biaya').valueAsDate = new Date();
+        btn.innerText = "📥 SIMPAN SEMUA PENGELUARAN";
+        btn.disabled = false;
+    }
+</script>
 </body>
 </html>
