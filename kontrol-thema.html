@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontrol Tema & Studio - Revolusi Studio</title>
+    
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root { --glass: rgba(255, 255, 255, 0.12); --glass-border: rgba(255, 255, 255, 0.2); --text-main: #ffffff; --ios-orange: #FF9500; }
+        body { font-family: -apple-system, sans-serif; margin: 0; padding: 20px; color: var(--text-main); min-height: 100vh; background: #0a0a0a; background-image: url('https://images.unsplash.com/photo-1647346425804-34383b95644b?q=80&w=1332&auto=format&fit=crop'); background-size: cover; background-attachment: fixed; box-sizing: border-box; }
+        .container { max-width: 900px; margin: auto; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 25px; padding: 25px; margin-bottom: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 800; color: var(--ios-orange); }
+        
+        .form-grid { display: grid; grid-template-columns: 2fr 1.5fr auto; gap: 12px; align-items: end; margin-bottom: 20px; }
+        @media(max-width: 700px) { .form-grid { grid-template-columns: 1fr; } }
+        
+        .form-group { text-align: left; }
+        label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; margin-left: 5px; opacity: 0.9; }
+        input, select { width: 100%; padding: 12px 15px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: white; font-size: 14px; outline: none; box-sizing: border-box; }
+        input:focus, select:focus { border-color: var(--ios-orange); }
+
+        /* Tabel Tema */
+        .table-container { overflow-x: auto; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; }
+        th { background: rgba(0,0,0,0.7); padding: 15px; color: var(--ios-orange); font-weight: 700; }
+        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+        tr:hover { background: rgba(255,255,255,0.03); }
+
+        .badge { padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: inline-block; }
+        .badge-buka { background: rgba(52, 199, 89, 0.2); color: #34c759; border: 1px solid rgba(52, 199, 89, 0.4); }
+        .badge-tutup { background: rgba(255, 59, 48, 0.2); color: #ff8a80; border: 1px solid rgba(255, 59, 48, 0.4); }
+
+        .btn-aksi { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; transition: 0.2s; margin-right: 5px; }
+        .btn-status { background: #007AFF; color: white; }
+        .btn-hapus { background: #FF3B30; color: white; }
+        .btn-tambah { width: 100%; padding: 12px; background: var(--ios-orange); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(255,149,0,0.3); }
+        .btn-tambah:active { transform: scale(0.98); }
+
+        .btn-nav { background: rgba(255,255,255,0.15); border: 1px solid var(--glass-border); color: white; padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; font-size: 13px; }
+        .btn-nav:hover { background: rgba(255,255,255,0.3); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="glass-card header">
+        <div>
+            <h1>Kontrol Tema & Studio</h1>
+            <p id="sub-info" style="margin: 5px 0 0; opacity: 0.8; font-size: 13px;">Menghubungkan ke database Supabase... ⏳</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <a href="daftar.html" class="btn-nav" target="_blank">➕ Halaman Daftar</a>
+            <a href="admin.html" class="btn-nav" target="_blank">⚙️ Panel Admin</a>
+        </div>
+    </div>
+
+    <!-- FORM TAMBAH TEMA BARU -->
+    <div class="glass-card">
+        <h3 style="margin: 0 0 15px 0; font-size: 16px; color: #ffd699;">➕ Tambah Tema / Studio Baru</h3>
+        <form onsubmit="tambahTemaBaru(event)">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nama Tema / Studio</label>
+                    <input type="text" id="inputNama" required placeholder="Contoh: Studio 4 Neon Vibes">
+                </div>
+                <div class="form-group">
+                    <label>Harga Sewa (Rp)</label>
+                    <input type="number" id="inputHarga" min="0" required placeholder="Contoh: 20000">
+                </div>
+                <div>
+                    <button type="submit" class="btn-tambah" id="btnTambah">Simpan Tema</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- DAFTAR TEMA AKTIF -->
+    <div class="glass-card">
+        <h3 style="margin: 0 0 15px 0; font-size: 16px;">📋 Daftar Tema & Pengaturan Harga</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nama Tema / Studio</th>
+                        <th>Harga Sewa</th>
+                        <th>Status</th>
+                        <th style="text-align: center;">Aksi Kontrol</th>
+                    </tr>
+                </thead>
+                <tbody id="tabel-thema-body">
+                    <tr><td colspan="5" style="text-align: center; opacity: 0.5; padding: 30px;">Memuat data tema dari server...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://jxlpoqjfblnjxcfbnkjf.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4bHBvcWpmYmxuanhjZmJua2pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODI0NzYsImV4cCI6MjA5ODY1ODQ3Nn0.iJpxBgGtnjYNui7YdoLnrvfiL20pdGb2mLdUUvaGqJU'; 
+    const dbKlien = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function muatDataThema() {
+        try {
+            document.getElementById('sub-info').innerText = "Menarik data tema... ⏳";
+            
+            const { data, error } = await dbKlien
+                .from('master_thema')
+                .select('*')
+                .order('id', { ascending: true });
+
+            if (error) throw error;
+
+            tampilkanTabel(data || []);
+            document.getElementById('sub-info').innerText = `Total ${(data || []).length} tema terdaftar.`;
+
+        } catch (e) {
+            console.error(e);
+            document.getElementById('sub-info').innerText = "❌ Gagal terhubung ke database.";
+            document.getElementById('tabel-thema-body').innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ff8a80; padding: 20px;">Gagal memuat data tema. Pastikan tabel 'master_thema' sudah dibuat di Supabase.</td></tr>`;
+        }
+    }
+
+    function tampilkanTabel(dataList) {
+        const tbody = document.getElementById('tabel-thema-body');
+        
+        if (!dataList || dataList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; opacity: 0.5; padding: 30px;">Belum ada tema terdaftar.</td></tr>`;
+            return;
+        }
+
+        let html = "";
+        dataList.forEach(t => {
+            const statusBuka = String(t.status || "Buka").trim().toLowerCase() === "buka";
+            const badgeClass = statusBuka ? "badge-buka" : "badge-tutup";
+            const statusLabel = statusBuka ? "Buka" : "Tutup";
+            const actionStatusText = statusBuka ? "Tutup Tema" : "Buka Tema";
+            const hargaRupiah = parseInt(t.harga || 0).toLocaleString('id-ID');
+
+            html += `
+                <tr>
+                    <td>#${t.id}</td>
+                    <td><strong>${t.nama_thema}</strong></td>
+                    <td style="color: #85e09b; font-weight: bold;">Rp ${hargaRupiah}</td>
+                    <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
+                    <td style="text-align: center;">
+                        <button class="btn-aksi btn-status" onclick="ubahStatusTema(${t.id}, '${statusBuka ? "Tutup" : "Buka"}')">${actionStatusText}</button>
+                        <button class="btn-aksi btn-hapus" onclick="hapusTema(${t.id})">Hapus</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = html;
+    }
+
+    async function tambahTemaBaru(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnTambah');
+        const nama = document.getElementById('inputNama').value.trim();
+        const harga = parseInt(document.getElementById('inputHarga').value) || 0;
+
+        btn.innerText = "Menyimpan... ⏳";
+        btn.disabled = true;
+
+        try {
+            const { error } = await dbKlien.from('master_thema').insert([{
+                nama_thema: nama,
+                harga: harga,
+                status: 'Buka'
+            }]);
+
+            if (error) throw error;
+
+            alert("✅ Tema studio baru berhasil ditambahkan!");
+            document.getElementById('inputNama').value = "";
+            document.getElementById('inputHarga').value = "";
+            muatDataThema();
+
+        } catch (e) {
+            alert("Gagal menambah tema: " + e.message);
+        } finally {
+            btn.innerText = "Simpan Tema";
+            btn.disabled = false;
+        }
+    }
+
+    async function ubahStatusTema(id, statusBaru) {
+        try {
+            const { error } = await dbKlien
+                .from('master_thema')
+                .update({ status: statusBaru })
+                .eq('id', id);
+
+            if (error) throw error;
+            muatDataThema();
+        } catch (e) {
+            alert("Gagal mengubah status: " + e.message);
+        }
+    }
+
+    async function hapusTema(id) {
+        if (!confirm("⚠️ Apakah Anda yakin ingin menghapus tema ini dari database?")) return;
+
+        try {
+            const { error } = await dbKlien
+                .from('master_thema')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            muatDataThema();
+        } catch (e) {
+            alert("Gagal menghapus tema: " + e.message);
+        }
+    }
+
+    window.onload = muatDataThema;
+</script>
+</body>
+</html>

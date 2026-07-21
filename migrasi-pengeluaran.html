@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Pemulihan Pengeluaran - Revolusi Studio</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #111; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 30px; width: 100%; max-width: 550px; text-align: center; }
+        button { background: #FF3B30; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        button:disabled { background: #555; cursor: not-allowed; }
+        .log-box { background: black; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; font-family: monospace; font-size: 11px; height: 180px; overflow-y: auto; color: #ff8a80; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>🤖 Robot Pemulihan Pengeluaran</h1>
+    <p>Menyedot data rincian pengeluaran dari Google Sheets ke Supabase.</p>
+    <button id="btn-start" onclick="mulaiMigrasiPgl()">🚀 MULAI PEMULIHAN PENGELUARAN</button>
+    <div class="log-box" id="log-box" style="color: #85e09b;">> Sistem siap... Menunggu perintah.</div>
+</div>
+
+<script>
+    const URL_GAS_LAMA = "https://script.google.com/macros/s/AKfycbwPdoH2h6VZLGb_LBeIO8Fi1yBrmY8Efm2hWry_9myk6mCbSkQqi6WQOHaXxIxk43BAjQ/exec";
+    const SUPABASE_URL = 'https://jxlpoqjfblnjxcfbnkjf.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4bHBvcWpmYmxuanhjZmJua2pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODI0NzYsImV4cCI6MjA5ODY1ODQ3Nn0.iJpxBgGtnjYNui7YdoLnrvfiL20pdGb2mLdUUvaGqJU'; 
+    
+    const dbKlien = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    function tulisLog(teks, isError = false) {
+        const box = document.getElementById('log-box');
+        const warna = isError ? '#ff8a80' : '#85e09b';
+        box.innerHTML += `<br><span style="color: ${warna};">> ${teks}</span>`;
+        box.scrollTop = box.scrollHeight;
+    }
+
+    async function mulaiMigrasiPgl() {
+        const btn = document.getElementById('btn-start');
+        btn.disabled = true; btn.innerText = "Sedang Menyedot Data... ⏳";
+        
+        try {
+            tulisLog("Menghubungkan ke Google Sheets lama...");
+            const response = await fetch(URL_GAS_LAMA);
+            const dataLama = await response.json();
+            
+            // Mengambil data dari variabel 'pengeluaran' di Apps Script lama
+            const pglLama = dataLama.pengeluaran || [];
+            tulisLog(`Berhasil mengambil ${pglLama.length} baris data pengeluaran.`);
+
+            if (pglLama.length === 0) {
+                tulisLog("Tidak ada data pengeluaran ditemukan di Google Sheets.");
+                btn.innerText = "SELESAI (KOSONG)";
+                return;
+            }
+
+            let dataSiapTembak = [];
+            pglLama.forEach(item => {
+                if (item.kategori && item.kategori.toLowerCase() !== "kategori") {
+                    dataSiapTembak.push({
+                        tanggal: String(item.tanggal || "01/01/2026"),
+                        kategori: String(item.kategori || "Operasional"),
+                        jumlah: parseInt(String(item.jumlah || 0).replace(/[^0-9]/g, '')) || 0,
+                        keterangan: String(item.keterangan || "-")
+                    });
+                }
+            });
+
+            tulisLog(`Data pengeluaran bersih: ${dataSiapTembak.length} baris. Mengirim ke Supabase...`);
+
+            // Tembak sekaligus ke tabel pengeluaran Supabase
+            const { error } = await dbKlien.from('pengeluaran').insert(dataSiapTembak);
+            
+            if (error) {
+                throw new Error(error.message);
+            }
+
+            tulisLog("🎉 PEMULIHAN PENGELUARAN SELESAI!");
+            alert(`SUKSES! Semua data pengeluaran berhasil dipulihkan.`);
+            btn.innerText = "SELESAI BERHASIL!";
+
+        } catch (error) {
+            tulisLog("❌ ERROR: " + error.message, true);
+            btn.innerText = "GAGAL. COBA LAGI."; 
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>
