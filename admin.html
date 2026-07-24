@@ -40,6 +40,9 @@
 
         .btn-nav { background: rgba(255,255,255,0.15); border: 1px solid var(--glass-border); color: white; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: bold; text-decoration: none; display: inline-block; }
         .btn-nav:hover { background: rgba(255,255,255,0.3); }
+
+        /* Efek Hover Salin Nomor */
+        .btn-salin:hover { background: rgba(52, 199, 89, 0.25) !important; transform: scale(1.02); }
     </style>
 </head>
 <body>
@@ -145,7 +148,18 @@
                 <tr>
                     <td style="white-space: nowrap;">${t.tanggal || '-'}<br><span style="font-size:10px; opacity:0.5;">#${t.id}</span></td>
                     <td><strong>${t.nama || '-'}</strong></td>
-                    <td style="white-space: nowrap;">${t.wa && t.wa !== '-' ? `<a href="https://wa.me/68${t.wa.replace(/^0+/, '')}" target="_blank" style="color: #85e09b; text-decoration:none;">📱 ${t.wa}</a>` : '-'}</td>
+                    
+                    <td style="white-space: nowrap;">
+                        ${t.wa && t.wa !== '-' ? 
+                        `<div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="btn-salin" onclick="salinWA(this, '${t.wa}')" title="Klik untuk menyalin" 
+                                  style="color: #85e09b; cursor: pointer; background: rgba(52, 199, 89, 0.1); padding: 4px 8px; border-radius: 6px; font-weight: bold; transition: 0.2s;">
+                                📋 ${t.wa}
+                            </span>
+                            <a href="https://wa.me/62${t.wa.replace(/^0+/, '')}" target="_blank" title="Buka di WhatsApp" style="text-decoration: none; font-size: 14px;">💬</a>
+                        </div>` : '-'}
+                    </td>
+
                     <td><span style="background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 6px; font-size: 11px; white-space: nowrap;">${t.tema || '-'}</span></td>
                     <td>${t.jumlah || 1}</td>
                     <td>${t.pembayaran || 'Cash'}</td>
@@ -153,7 +167,7 @@
                     <td><span class="badge ${badgeClass}">${statusStr}</span></td>
                     <td style="text-align: center;">
                         <div class="aksi-group">
-                            <button class="btn-aksi btn-selesai" onclick="ubahStatus(${t.id}, 'Selesai')">✅ Selesai</button>
+                            ${isMenunggu ? `<button class="btn-aksi btn-selesai" onclick="ubahStatus(${t.id}, 'Selesai')">✅ Selesai</button>` : ''}
                             <button class="btn-aksi btn-hapus" onclick="hapusData(${t.id})">🗑️ Hapus</button>
                         </div>
                     </td>
@@ -163,6 +177,23 @@
 
         tbody.innerHTML = html;
     }
+
+    // Fungsi Baru: Menyalin Nomor WhatsApp ke Clipboard
+    window.salinWA = function(elemen, nomor) {
+        navigator.clipboard.writeText(nomor).then(() => {
+            const teksAsli = elemen.innerHTML;
+            elemen.innerHTML = "✅ Tersalin!";
+            elemen.style.background = "rgba(52, 199, 89, 0.3)";
+            
+            // Kembalikan ke teks semula setelah 1.5 detik
+            setTimeout(() => {
+                elemen.innerHTML = teksAsli;
+                elemen.style.background = "rgba(52, 199, 89, 0.1)";
+            }, 1500);
+        }).catch(err => {
+            alert("❌ Gagal menyalin nomor: " + err);
+        });
+    };
 
     function filterData() {
         const keyword = document.getElementById('cariNama').value.toLowerCase();
