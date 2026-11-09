@@ -3,244 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Revolusi Studio</title>
+    <title>Pendaftaran Studio - Revolusi Photobox</title>
     
-    <!-- 🚀 WAJIB: Memanggil Library Supabase -->
+    <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+    
     <style>
-        :root {
-            --glass: rgba(255, 255, 255, 0.2);
-            --glass-border: rgba(255, 255, 255, 0.3);
-            --ios-blue: #007AFF;
-            --ios-green: #34C759;
-            --text-main: #ffffff;
-        }
-
-        body {
-            margin: 0; padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-image: url('https://images.unsplash.com/photo-1647346425804-34383b95644b?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-            background-size: cover; background-position: center; background-attachment: fixed;
-            display: flex; justify-content: center; align-items: center; min-height: 100vh;
-            color: var(--text-main);
-        }
-
-        .glass-container {
-            width: 90%; max-width: 400px; background: var(--glass);
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-border); border-radius: 35px;
-            padding: 35px 25px; box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-
-        h1 { font-size: 26px; font-weight: 700; margin-bottom: 5px; letter-spacing: -1px; }
-        p.subtitle { font-size: 14px; opacity: 0.8; margin-bottom: 25px; }
-
+        :root { --glass: rgba(255, 255, 255, 0.12); --glass-border: rgba(255, 255, 255, 0.2); --text-main: #ffffff; --ios-blue: #007AFF; }
+        body { font-family: -apple-system, sans-serif; margin: 0; padding: 20px; color: var(--text-main); min-height: 100vh; background: #0a0a0a; background-image: url('https://images.unsplash.com/photo-1647346425804-34383b95644b?q=80&w=1332&auto=format&fit=crop'); background-size: cover; background-attachment: fixed; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+        .container { width: 100%; max-width: 450px; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 25px; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); text-align: center; }
+        
+        .header-icon { font-size: 45px; margin-bottom: 10px; }
+        h1 { margin: 0 0 5px 0; font-size: 24px; font-weight: 800; color: #ff9500; }
+        p.subtitle { font-size: 13px; opacity: 0.8; margin: 0 0 25px 0; }
+        
         .form-group { text-align: left; margin-bottom: 15px; }
-        label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; margin-left: 8px; }
+        label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; margin-left: 5px; opacity: 0.9; text-transform: uppercase; }
+        input, select { width: 100%; padding: 14px 15px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: white; font-size: 15px; box-sizing: border-box; transition: 0.3s; outline: none; }
+        input:focus, select:focus { border-color: var(--ios-blue); background: rgba(0,0,0,0.6); }
+        option { background-color: #1a1a2e; color: white; }
 
-        input, select {
-            width: 100%; padding: 14px 18px; background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; color: white;
-            font-size: 16px; box-sizing: border-box; transition: all 0.3s;
-        }
-        input:focus, select:focus { outline: none; background: rgba(255, 255, 255, 0.25); border-color: var(--ios-blue); }
-        option { background-color: #1e3c72; color: white; }
+        .total-box { display: flex; justify-content: space-between; align-items: center; background: rgba(0, 122, 255, 0.15); border: 1px dashed var(--ios-blue); border-radius: 15px; padding: 15px; margin-top: 20px; margin-bottom: 20px; }
+        .total-angka { font-size: 24px; font-weight: 900; color: #80c1ff; }
 
-        .price-tag {
-            background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 20px;
-            margin: 20px 0; border: 1px dashed var(--glass-border);
-        }
-        .total-amount { font-size: 24px; font-weight: 800; color: #fff; }
-
-        button {
-            width: 100%; padding: 18px; background: var(--ios-blue); color: white;
-            border: none; border-radius: 20px; font-size: 17px; font-weight: 600;
-            cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
-        }
-        button:disabled { background: #555; cursor: not-allowed; box-shadow: none; }
-        button:active { transform: scale(0.97); }
-
-        #qris-section {
-            display: none; margin-top: 20px; padding: 15px; background: white;
-            border-radius: 20px; animation: fadeIn 0.5s;
-        }
-        #qris-section img { width: 100%; border-radius: 10px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-submit { width: 100%; padding: 16px; background: var(--ios-blue); color: white; border: none; border-radius: 15px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3); }
+        .btn-submit:active { transform: scale(0.98); }
+        .btn-submit:disabled { background: #555; cursor: not-allowed; box-shadow: none; }
     </style>
 </head>
 <body>
 
-<div class="glass-container" id="main-content">
-    
-    <!-- HALAMAN 1: FORM INPUT -->
-    <div id="form-pendaftaran">
-        <h1>Revolusi Studio</h1>
-        <p class="subtitle">Booking Sesi Foto Premium Anda</p>
+<div class="container">
+    <div class="glass-card">
+        <div class="header-icon">📸</div>
+        <h1>Pendaftaran Photobox</h1>
+        <p class="subtitle">Isi data untuk masuk ke antrean</p>
+        
+        <form id="formDaftar" onsubmit="prosesDaftar(event)">
+            <div class="form-group">
+                <label>Nama Pelanggan</label>
+                <input type="text" id="inputNama" required placeholder="Contoh: Kak Dinda">
+            </div>
 
-        <div class="form-group">
-            <label>Nama Anda</label>
-            <input type="text" id="nama" placeholder="Nama sesuai identitas">
-        </div>
+            <div class="form-group">
+                <label>Nomor WhatsApp</label>
+                <input type="tel" id="inputWA" required placeholder="Contoh: 08123456789">
+            </div>
 
-        <div class="form-group">
-            <label>WhatsApp</label>
-            <input type="number" id="wa" placeholder="081234567xxx">
-        </div>
-
-        <div style="display: flex; gap: 10px;">
-            <div class="form-group" style="flex: 2;">
-                <label>Tema Studio</label>
-                <select id="tema" onchange="hitungHarga()">
-                    <option value="Classic Retro">Classic Retro (S1) - Rp 15.000</option>
-                    <option value="Blue Room">Blue Room (S2) - Rp 10.000</option>
-                    <option value="Night Fest">Night Fest (S3) - Rp 15.000</option>
+            <div class="form-group">
+                <label>Pilih Tema / Studio</label>
+                <select id="inputTema" required onchange="hitungTotal()">
+                    <option value="Vintage Photobox">Vintage Photobox</option>
+                    <option value="Basic Photobooth">Basic Photobooth</option>
                 </select>
             </div>
-            <div class="form-group" style="flex: 1;">
-                <label>Orang</label>
-                <input type="number" id="jumlah" value="1" min="1" oninput="hitungHarga()">
+
+            <div class="form-group">
+                <label>Jumlah Orang</label>
+                <input type="number" id="inputJumlah" value="1" min="1" max="8" required oninput="hitungTotal()" placeholder="Maksimal 8 orang">
             </div>
-        </div>
 
-        <div class="form-group">
-            <label>Metode Pembayaran</label>
-            <select id="pembayaran">
-                <option value="Cash">Tunai / Cash</option>
-                <option value="QRIS">QRIS / Transfer</option>
-            </select>
-        </div>
+            <div class="form-group">
+                <label>Metode Pembayaran</label>
+                <select id="inputBayar" required>
+                    <option value="Cash">Tunai / Cash</option>
+                    <option value="QRIS">QRIS / Transfer</option>
+                </select>
+            </div>
 
-        <div class="price-tag">
-            <div style="font-size: 12px; opacity: 0.7;">Total Bayar:</div>
-            <div class="total-amount" id="display-total">Rp 15.000</div>
-        </div>
+            <div class="total-box">
+                <div style="font-size: 12px; font-weight: bold; opacity: 0.8;">TOTAL BAYAR :</div>
+                <div class="total-angka" id="tampil-harga">Rp 15.000</div>
+            </div>
 
-        <!-- Tombol memanggil fungsi JS -->
-        <button onclick="ambilAntrean()" id="btnSubmit">AMBIL ANTREAN</button>
+            <button type="submit" class="btn-submit" id="btnDaftar">🎟️ MASUKKAN KE ANTREAN</button>
+        </form>
     </div>
-
-    <!-- HALAMAN 2: HASIL TIKET (Awalnya Disembunyikan) -->
-    <div id="ticket-result" style="display: none;">
-        <h2 style="color: var(--ios-green);">Pendaftaran Sukses!</h2>
-        <div style="font-size: 60px; font-weight: 800; margin: 20px 0;" id="nomor-tampil">001</div>
-        <p id="info-pelanggan"></p>
-        
-        <div id="qris-section">
-            <p style="color: #333; font-size: 12px; font-weight: bold;">SCAN UNTUK MEMBAYAR</p>
-            <img src="https://i.ibb.co.com/nqxYdXGG/Qris-Statis-Revolusi-Studio.png" alt="QRIS">
-            <p style="color: #666; font-size: 11px; margin-top: 5px;">*Tunjukkan bukti bayar ke staf</p>
-        </div>
-        
-        <button onclick="location.reload()" style="background: rgba(255,255,255,0.2); margin-top: 20px; box-shadow: none;">Daftar Lagi</button>
-    </div>
-
 </div>
 
-<!-- 🚀 LOGIKA JAVASCRIPT SUPABASE -->
 <script>
-    // 1. Kunci Supabase Anda
     const SUPABASE_URL = 'https://jxlpoqjfblnjxcfbnkjf.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4bHBvcWpmYmxuanhjZmJua2pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODI0NzYsImV4cCI6MjA5ODY1ODQ3Nn0.iJpxBgGtnjYNui7YdoLnrvfiL20pdGb2mLdUUvaGqJU'; 
-    
-    // 2. Inisialisasi Koneksi
-    const dbKlien = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const dbKlien = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 3. Fungsi Menghitung Harga Live (Termasuk Studio 3 Night Fest seharga Studio 1)
-    function hitungHarga() {
-        const tema = document.getElementById('tema').value;
-        const jml = parseInt(document.getElementById('jumlah').value) || 1;
+    let hargaFinal = 15000;
+
+    // 🧠 LOGIKA PINTAR PENENTUAN HARGA
+    function hitungTotal() {
+        const tema = document.getElementById('inputTema').value;
+        const qty = parseInt(document.getElementById('inputJumlah').value) || 1;
         
-        // Studio 1 & Studio 3 harganya Rp 15.000, Studio 2 Rp 10.000 (sesuaikan jika perlu)
-        let hargaSatuan = 15000;
-        if (tema === "Blue Room") {
-            hargaSatuan = 10000;
+        if (tema === "Vintage Photobox") {
+            // Harga Bertingkat berdasarkan jumlah orang
+            const daftarHargaVintage = {
+                1: 15000,
+                2: 25000,
+                3: 35000,
+                4: 40000,
+                5: 50000,
+                6: 60000,
+                7: 70000,
+                8: 80000
+            };
+            // Jika input melebihi 8, set mentok di harga 8 orang
+            hargaFinal = daftarHargaVintage[qty] || 80000; 
+        } 
+        else if (tema === "Basic Photobooth") {
+            // Harga Flat, berapapun jumlah orangnya tetap Rp 20.000
+            hargaFinal = 20000;
         }
 
-        const total = hargaSatuan * jml;
-        document.getElementById('display-total').innerText = "Rp " + total.toLocaleString('id-ID');
-        return total;
+        // Tampilkan ke layar
+        document.getElementById('tampil-harga').innerText = "Rp " + hargaFinal.toLocaleString('id-ID');
     }
 
-    // 4. Fungsi Utama: Mengirim Data ke Database
-    async function ambilAntrean() {
-        const btn = document.getElementById('btnSubmit');
-        const nama = document.getElementById('nama').value.trim();
-        const wa = document.getElementById('wa').value.trim();
-        const tema = document.getElementById('tema').value;
-        const jml = document.getElementById('jumlah').value;
-        const metode = document.getElementById('pembayaran').value;
-        const total = hitungHarga();
-
-        // Validasi agar kasir tidak kosongkan nama/wa
-        if (!nama || !wa) { 
-            alert("⚠️ Harap isi Nama dan Nomor WhatsApp terlebih dahulu!"); 
-            return; 
-        }
-
-        // Ubah tombol jadi loading
-        btn.innerText = "Menyimpan data... ⏳";
+    async function prosesDaftar(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('btnDaftar');
+        btn.innerText = "Mengirim Data... ⏳";
         btn.disabled = true;
 
+        const nama = document.getElementById('inputNama').value.trim();
+        const wa = document.getElementById('inputWA').value.trim();
+        const tema = document.getElementById('inputTema').value;
+        const jumlah = parseInt(document.getElementById('inputJumlah').value) || 1;
+        const bayar = document.getElementById('inputBayar').value;
+
+        const d = new Date();
+        const tglKirim = d.getDate().toString().padStart(2, '0') + "/" + 
+                         (d.getMonth() + 1).toString().padStart(2, '0') + "/" + 
+                         d.getFullYear() + " " + 
+                         d.getHours().toString().padStart(2, '0') + ":" + 
+                         d.getMinutes().toString().padStart(2, '0');
+
         try {
-            // A. Format Tanggal Standar Indonesia (DD/MM/YYYY)
-            const d = new Date();
-            const tglHariIni = d.getDate().toString().padStart(2, '0') + "/" + 
-                               (d.getMonth() + 1).toString().padStart(2, '0') + "/" + 
-                               d.getFullYear();
+            const { error } = await dbKlien.from('transaksi').insert([{
+                tanggal: tglKirim,
+                nama: nama,
+                wa: wa,
+                tema: tema,
+                jumlah: jumlah,
+                pembayaran: bayar,
+                total: hargaFinal,
+                status: 'Menunggu'
+            }]);
 
-            // B. Cek Antrean Hari Ini untuk Menentukan Nomor Tiket
-            const { count, error: errHitung } = await dbKlien
-                .from('transaksi')
-                .select('*', { count: 'exact', head: true })
-                .eq('tanggal', tglHariIni)
-                .eq('tema', tema);
+            if (error) throw error;
 
-            if (errHitung) {
-                console.error("Gagal hitung antrean:", errHitung);
-                throw new Error("Gagal membaca database antrean.");
-            }
-
-            const nomorUrut = ((count || 0) + 1).toString().padStart(3, '0');
-
-            // C. Masukkan Data Pendaftaran Baru ke Supabase
-            const { error: errInsert } = await dbKlien
-                .from('transaksi')
-                .insert([{
-                    tanggal: tglHariIni,
-                    nama: nama,
-                    wa: wa,
-                    status: "Menunggu",
-                    tema: tema,
-                    jumlah: parseInt(jml),
-                    pembayaran: metode,
-                    total: total
-                }]);
-
-            if (errInsert) {
-                console.error("Gagal insert data:", errInsert);
-                throw new Error("Gagal menyimpan data ke server.");
-            }
-
-            // D. Sukses! Sembunyikan form dan Tampilkan Tiket
-            document.getElementById('form-pendaftaran').style.display = "none";
-            document.getElementById('ticket-result').style.display = "block";
+            alert("✅ Pendaftaran Berhasil! Pelanggan masuk ke antrean.");
             
-            document.getElementById('nomor-tampil').innerText = nomorUrut;
-            document.getElementById('info-pelanggan').innerText = nama + " (" + tema + ")";
-
-            if (metode === "QRIS") {
-                document.getElementById('qris-section').style.display = "block";
-            }
+            // Reset Form
+            document.getElementById('formDaftar').reset();
+            hitungTotal(); // Kembalikan harga ke default
 
         } catch (error) {
-            alert("❌ Terjadi Kesalahan: " + error.message);
-            btn.innerText = "AMBIL ANTREAN";
+            console.error(error);
+            alert("❌ Gagal mendaftar. Periksa koneksi internet Anda.");
+        } finally {
+            btn.innerText = "🎟️ MASUKKAN KE ANTREAN";
             btn.disabled = false;
         }
     }
-</script>
 
+    // Panggil saat halaman pertama dimuat agar harga awal muncul
+    window.onload = hitungTotal;
+</script>
 </body>
 </html>

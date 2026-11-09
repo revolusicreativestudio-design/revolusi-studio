@@ -142,7 +142,7 @@
     <nav class="sidebar">
         <div class="brand" onclick="tekanRahasia()" title="Klik 3x untuk buka Management">📸 <span>Revolusi Photobox</span></div>
         
-        <<div class="menu-section">
+        <div class="menu-section">
             <div class="menu-label">Main Menu</div>
             <a onclick="bukaHome(this)" class="menu-item active">🏠 <span>Home</span></a>
             
@@ -157,7 +157,9 @@
             <a onclick="cekAkses(this, 'tutup-harian.html')" class="menu-item">🧾 <span>Tutup Harian</span></a>
             <a onclick="cekAkses(this, 'histori-tutup.html')" class="menu-item">📖 <span>Histori Closing</span></a>
             <a onclick="cekAkses(this, 'admin.html')" class="menu-item">⚙️ <span>Panel Admin</span></a>
+            <a onclick="cekAkses(this, 'kontrol-thema.html')" class="menu-item">🎛️ <span>Kontrol Tema</span></a>
             <a onclick="cekAkses(this, 'filter-laporan.html')" class="menu-item">📊 <span>Laporan Keuangan</span></a>
+            <a onclick="cekAkses(this, 'tagihan.html')" class="menu-item">💳 <span>Tagihan & Hutang</span></a>
             <a onclick="cekAkses(this, 'input-pengeluaran.html')" class="menu-item">💸 <span>Pengeluaran</span></a>
             <a onclick="cekAkses(this, 'aset.html')" class="menu-item">💻 <span>Inventaris Aset</span></a>
         </div>
@@ -252,23 +254,23 @@
         let waktuKlik;
 
         function tekanRahasia() {
-    klikRahasia++;
-    clearTimeout(waktuKlik);
-    waktuKlik = setTimeout(() => { klikRahasia = 0; }, 1000);
+            klikRahasia++;
+            clearTimeout(waktuKlik);
+            waktuKlik = setTimeout(() => { klikRahasia = 0; }, 1000);
 
-    if (klikRahasia === 3) {
-        const menuMgmt = document.getElementById('menu-management');
-        const btnKunci = document.getElementById('tombol-kunci');
-        const btnSet = document.getElementById('tombol-setting'); // Tambahkan ini
-        
-        const isHidden = menuMgmt.style.display === 'none';
-        menuMgmt.style.display = isHidden ? 'block' : 'none';
-        btnKunci.style.display = isHidden ? 'flex' : 'none';
-        btnSet.style.display = isHidden ? 'flex' : 'none'; // Ikut muncul/sembunyi
-        
-        klikRahasia = 0;
-    }
-}
+            if (klikRahasia === 3) {
+                const menuMgmt = document.getElementById('menu-management');
+                const btnKunci = document.getElementById('tombol-kunci');
+                const btnSet = document.getElementById('tombol-setting'); 
+                
+                const isHidden = menuMgmt.style.display === 'none';
+                menuMgmt.style.display = isHidden ? 'block' : 'none';
+                btnKunci.style.display = isHidden ? 'flex' : 'none';
+                btnSet.style.display = isHidden ? 'flex' : 'none'; 
+                
+                klikRahasia = 0;
+            }
+        }
         // ==========================================
 
         function cekAkses(elemen, url) {
@@ -328,6 +330,7 @@
             // Ekstra Keamanan: Saat dikunci, sekalian sembunyikan menunya lagi
             document.getElementById('menu-management').style.display = 'none';
             document.getElementById('tombol-kunci').style.display = 'none';
+            document.getElementById('tombol-setting').style.display = 'none'; // Sembunyikan setting juga
 
             alert("Sistem berhasil dikunci dan disembunyikan!");
             

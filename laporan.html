@@ -61,9 +61,12 @@
                 <div class="stat-box box-omzet"><h3 style="color: #80c1ff;">TOTAL OMZET KOTOR</h3><p id="omzet-total" style="color: #80c1ff; font-size: 24px;">Rp 0</p></div>
                 <div class="stat-box"><h3>💵 Uang Cash</h3><p id="omzet-cash">Rp 0</p></div>
                 <div class="stat-box"><h3>📱 QRIS / TF</h3><p id="omzet-qris">Rp 0</p></div>
-                <div class="stat-box"><h3>📸 Studio 1 (Retro)</h3><p id="omzet-s1">Rp 0</p></div>
-                <div class="stat-box"><h3>🔷 Studio 2 (Blue)</h3><p id="omzet-s2">Rp 0</p></div>
+                
+                <!-- LABEL NAMA STUDIO TERBARU -->
+                <div class="stat-box"><h3>📸 Vintage Photobox</h3><p id="omzet-s1">Rp 0</p></div>
+                <div class="stat-box"><h3>🔷 Basic Photobooth</h3><p id="omzet-s2">Rp 0</p></div>
                 <div class="stat-box"><h3>🌙 Studio 3 (Night)</h3><p id="omzet-s3">Rp 0</p></div>
+                
                 <div class="stat-box box-merch"><h3 style="color:#ffd699;">🗝️ Keychain</h3><p id="omzet-keychain" style="color:#ff9500;">Rp 0</p></div>
                 <div class="stat-box box-merch"><h3 style="color:#ffd699;">🖨️ Extra Print</h3><p id="omzet-print" style="color:#ff9500;">Rp 0</p></div>
                 <div class="stat-box box-drink" style="grid-column: span 2;"><h3 style="color:#b3ffc6;">🥤 Soft Drink & Kulkas</h3><p id="omzet-drink" style="color:#34c759;">Rp 0</p></div>
@@ -106,7 +109,7 @@
     <div class="chart-grid-bawah">
         <div class="glass-card" style="margin-bottom:0;">
             <h3 style="margin:0 0 5px 0;">🥧 Komposisi Pendapatan Produk</h3>
-            <p style="font-size: 12px; opacity: 0.6; margin:0;">Porsi kontribusi dari S1, S2, S3, Keychain, Print, & Minuman</p>
+            <p style="font-size: 12px; opacity: 0.6; margin:0;">Porsi kontribusi per Studio, Keychain, Print, & Minuman</p>
             <div class="chart-box-kecil"><canvas id="grafikKomposisi"></canvas></div>
         </div>
         <div class="glass-card" style="margin-bottom:0;">
@@ -181,7 +184,7 @@
             let petaKeluarHarian = {};
             let petaPengeluaranDetail = {};
 
-            // 1. Proses Data Transaksi dengan Prioritas Add-on yang Akurat
+            // 1. Proses Data Transaksi - UPDATE LOGIKA FILTER TEMA PINTAR
             (trx || []).forEach(t => {
                 const tglData = parseTglIndo(t.tanggal);
                 if (tglData >= dateMulai && tglData <= dateSelesai) {
@@ -193,24 +196,30 @@
                             
                             if (String(t.pembayaran).toUpperCase().includes("CASH")) cash += harga; else qris += harga;
                             const temaStr = String(t.tema || "").toUpperCase();
-                            const namaProdukStr = String(t.nama || "").toUpperCase(); // Membaca juga nama produk
+                            const namaProdukStr = String(t.nama || "").toUpperCase();
 
-                            // Cek spesifik berdasarkan format add-on di input-addon.html (DRINK, KEYCHAIN, PRINT)
+                            // Filter Addon
                             if (temaStr.includes("DRINK") || namaProdukStr.includes("DRINK") || namaProdukStr.includes("TEH") || namaProdukStr.includes("MINERAL") || namaProdukStr.includes("AIR")) {
                                 oDrink += harga;
                             } else if (temaStr.includes("KEYCHAIN") || namaProdukStr.includes("KEYCHAIN") || namaProdukStr.includes("GANCI")) {
                                 oKey += harga;
                             } else if (temaStr.includes("PRINT") || temaStr.includes("CETAK") || namaProdukStr.includes("PRINT") || namaProdukStr.includes("CETAK")) {
                                 oPrint += harga;
-                            } else if (temaStr.includes("NIGHT") || temaStr.includes("STUDIO 3") || temaStr.includes("S3")) {
+                            } 
+                            // Filter Studio 3
+                            else if (temaStr.includes("NIGHT") || temaStr.includes("STUDIO 3") || temaStr.includes("S3")) {
                                 s3 += harga;
                                 totTrans++;
                                 totPpl += (parseInt(t.jumlah) || 1);
-                            } else if (temaStr.includes("BLUE") || temaStr.includes("STUDIO 2") || temaStr.includes("S2")) {
+                            } 
+                            // Filter BASIC PHOTOBOOTH (dan satukan dengan data Studio 2 lama agar histori tak hilang)
+                            else if (temaStr.includes("BASIC") || temaStr.includes("BLUE") || temaStr.includes("STUDIO 2") || temaStr.includes("S2")) {
                                 s2 += harga;
                                 totTrans++;
                                 totPpl += (parseInt(t.jumlah) || 1);
-                            } else {
+                            } 
+                            // Sisa data masuk ke VINTAGE PHOTOBOX (termasuk Classic Retro lama)
+                            else {
                                 s1 += harga;
                                 totTrans++;
                                 totPpl += (parseInt(t.jumlah) || 1);
@@ -244,7 +253,7 @@
                 }
             });
 
-            // Render Kotak Kolom Pengeluaran di Tengah
+            // Render Kotak Kolom Pengeluaran
             let htmlKotakPgl = `
                 <div class="stat-box box-keluar-total">
                     <h3 style="color: #ff8a80;">TOTAL KESELURUHAN KELUAR</h3>
@@ -277,9 +286,11 @@
             document.getElementById('omzet-total').innerText = "Rp " + omzet.toLocaleString('id-ID');
             document.getElementById('omzet-cash').innerText = "Rp " + cash.toLocaleString('id-ID');
             document.getElementById('omzet-qris').innerText = "Rp " + qris.toLocaleString('id-ID');
-            document.getElementById('omzet-s1').innerText = "Rp " + s1.toLocaleString('id-ID');
-            document.getElementById('omzet-s2').innerText = "Rp " + s2.toLocaleString('id-ID');
-            document.getElementById('omzet-s3').innerText = "Rp " + s3.toLocaleString('id-ID');
+            
+            document.getElementById('omzet-s1').innerText = "Rp " + s1.toLocaleString('id-ID'); // Vintage
+            document.getElementById('omzet-s2').innerText = "Rp " + s2.toLocaleString('id-ID'); // Basic
+            document.getElementById('omzet-s3').innerText = "Rp " + s3.toLocaleString('id-ID'); // Studio 3
+            
             document.getElementById('omzet-keychain').innerText = "Rp " + oKey.toLocaleString('id-ID');
             document.getElementById('omzet-print').innerText = "Rp " + oPrint.toLocaleString('id-ID');
             document.getElementById('omzet-drink').innerText = "Rp " + oDrink.toLocaleString('id-ID');
@@ -360,7 +371,8 @@
         chartKomposisi = new Chart(document.getElementById('grafikKomposisi').getContext('2d'), {
             type: 'doughnut',
             data: {
-                labels: ['Studio 1 (Retro)', 'Studio 2 (Blue)', 'Studio 3 (Night)', 'Keychain', 'Extra Print', 'Soft Drink'],
+                // LABEL NAMA TERBARU UNTUK CHART PIE
+                labels: ['Vintage Photobox', 'Basic Photobooth', 'Studio 3 (Night)', 'Keychain', 'Extra Print', 'Soft Drink'],
                 datasets: [{
                     data: dataKomposisi,
                     backgroundColor: ['#007AFF', '#34C759', '#AF52DE', '#FF9500', '#5856D6', '#FFCC00'],

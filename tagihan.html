@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Tagihan & Hutang - Revolusi Studio</title>
+    
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root { --glass: rgba(255, 255, 255, 0.12); --glass-border: rgba(255, 255, 255, 0.2); --text-main: #ffffff; --ios-blue: #007AFF; --ios-red: #FF3B30; --ios-green: #34C759; }
+        body { font-family: -apple-system, sans-serif; margin: 0; padding: 20px; color: var(--text-main); min-height: 100vh; background: #0a0a0a; background-image: url('https://images.unsplash.com/photo-1647346425804-34383b95644b?q=80&w=1332&auto=format&fit=crop'); background-size: cover; background-attachment: fixed; box-sizing: border-box; }
+        .container { max-width: 1100px; margin: auto; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; margin-bottom: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 800; color: #ff9500; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr 2fr 1fr auto; gap: 10px; align-items: end; margin-bottom: 10px; }
+        @media(max-width: 900px) { .form-grid { grid-template-columns: 1fr 1fr; } .form-grid button { grid-column: span 2; } }
+        
+        .form-group { text-align: left; }
+        label { display: block; font-size: 11px; font-weight: 600; margin-bottom: 6px; margin-left: 5px; opacity: 0.9; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: white; font-size: 14px; outline: none; box-sizing: border-box; transition: 0.3s; }
+        input:focus { border-color: var(--ios-blue); background: rgba(0,0,0,0.6); }
+
+        /* Tabel Tagihan */
+        .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+        th { background: rgba(0,0,0,0.7); padding: 12px; color: #ff9500; font-weight: 700; white-space: nowrap; }
+        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+        tr:hover { background: rgba(255,255,255,0.03); }
+
+        .badge { padding: 5px 10px; border-radius: 6px; font-size: 10px; font-weight: bold; text-transform: uppercase; display: inline-block; text-align: center; }
+        .badge-hutang { background: rgba(255, 59, 48, 0.2); color: #ff8a80; border: 1px solid rgba(255, 59, 48, 0.4); }
+        .badge-lunas { background: rgba(52, 199, 89, 0.2); color: #85e09b; border: 1px solid rgba(52, 199, 89, 0.4); }
+
+        .btn-aksi { padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; transition: 0.2s; }
+        .btn-bayar { background: var(--ios-blue); color: white; margin-right: 5px; }
+        .btn-hapus { background: transparent; border: 1px solid var(--ios-red); color: #ff8a80; }
+        .btn-bayar:hover { background: #0056b3; }
+        .btn-bayar:active { transform: scale(0.95); }
+
+        .btn-tambah { width: 100%; padding: 12px; background: var(--ios-blue); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-tambah:active { transform: scale(0.98); }
+
+        .btn-nav { background: rgba(255,255,255,0.15); border: 1px solid var(--glass-border); color: white; padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; font-size: 13px; }
+        .btn-nav:hover { background: rgba(255,255,255,0.3); }
+        
+        .total-box { display: inline-block; background: rgba(255, 59, 48, 0.15); padding: 10px 20px; border-radius: 12px; border: 1px solid rgba(255, 59, 48, 0.3); margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="glass-card header">
+        <div>
+            <h1>Catatan Hutang & Invoice</h1>
+            <p id="sub-info" style="margin: 5px 0 0; opacity: 0.8; font-size: 13px;">Menghubungkan ke database Supabase... ⏳</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="input-pengeluaran.html" class="btn-nav">💸 Pengeluaran</a>
+            <a href="laporan.html" class="btn-nav" target="_blank">📊 Laporan</a>
+        </div>
+    </div>
+
+    <!-- FORM INPUT TAGIHAN BARU -->
+    <div class="glass-card">
+        <h3 style="margin: 0 0 15px 0; font-size: 15px; color: #80c1ff;">📝 Masukkan Tagihan / Invoice Baru</h3>
+        <form onsubmit="tambahTagihan(event)">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Jatuh Tempo</label>
+                    <input type="date" id="inputTempo" required>
+                </div>
+                <div class="form-group">
+                    <label>Toko / Supplier</label>
+                    <input type="text" id="inputSupplier" required placeholder="Contoh: Toko Kertas Abadi">
+                </div>
+                <div class="form-group">
+                    <label>Keterangan Barang</label>
+                    <input type="text" id="inputKeterangan" required placeholder="Contoh: Kertas Foto 5 Roll & Tinta">
+                </div>
+                <div class="form-group">
+                    <label>Nominal Tagihan (Rp)</label>
+                    <input type="number" id="inputNominal" min="1" required placeholder="150000">
+                </div>
+                <div>
+                    <button type="submit" class="btn-tambah" id="btnTambah">💾 Simpan Tagihan</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- DAFTAR TAGIHAN -->
+    <div class="glass-card">
+        <h3 style="margin: 0 0 15px 0; font-size: 15px;">📋 Daftar Tagihan & Status Pembayaran</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Jatuh Tempo</th>
+                        <th>Supplier / Toko</th>
+                        <th>Keterangan</th>
+                        <th>Nominal</th>
+                        <th>Status</th>
+                        <th style="text-align: center;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabel-tagihan-body">
+                    <tr><td colspan="6" style="text-align: center; opacity: 0.5; padding: 25px;">Memuat data tagihan dari server...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="total-box">
+            <span style="font-size: 12px; opacity: 0.8;">Total Hutang Belum Lunas: </span>
+            <span id="total-hutang-angka" style="font-size: 20px; font-weight: bold; color: #ff8a80;">Rp 0</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://jxlpoqjfblnjxcfbnkjf.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4bHBvcWpmYmxuanhjZmJua2pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODI0NzYsImV4cCI6MjA5ODY1ODQ3Nn0.iJpxBgGtnjYNui7YdoLnrvfiL20pdGb2mLdUUvaGqJU'; 
+    const dbKlien = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function muatDataTagihan() {
+        try {
+            document.getElementById('sub-info').innerText = "Menarik data tagihan... ⏳";
+            
+            // Urutkan berdasarkan jatuh tempo terdekat
+            const { data, error } = await dbKlien
+                .from('tagihan_invoice')
+                .select('*')
+                .order('status', { ascending: true }) // Belum Lunas di atas
+                .order('jatuh_tempo', { ascending: true });
+
+            if (error) throw error;
+
+            tampilkanTabel(data || []);
+            document.getElementById('sub-info').innerText = `Sinkronisasi database berhasil.`;
+
+        } catch (e) {
+            console.error(e);
+            document.getElementById('sub-info').innerText = "❌ Gagal terhubung ke database.";
+            document.getElementById('tabel-tagihan-body').innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ff8a80; padding: 20px;">Gagal memuat data. Periksa tabel di Supabase.</td></tr>`;
+        }
+    }
+
+    function tampilkanTabel(dataList) {
+        const tbody = document.getElementById('tabel-tagihan-body');
+        let totalBelumLunas = 0;
+        
+        if (!dataList || dataList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; opacity: 0.5; padding: 30px;">Belum ada catatan tagihan.</td></tr>`;
+            document.getElementById('total-hutang-angka').innerText = "Rp 0";
+            return;
+        }
+
+        let html = "";
+        dataList.forEach(t => {
+            const isLunas = String(t.status || "").toLowerCase() === "lunas";
+            const badgeClass = isLunas ? "badge-lunas" : "badge-hutang";
+            const nominalAngka = parseInt(t.nominal || 0);
+            const nominalRp = nominalAngka.toLocaleString('id-ID');
+            
+            if (!isLunas) totalBelumLunas += nominalAngka;
+
+            html += `
+                <tr style="opacity: ${isLunas ? '0.6' : '1'};">
+                    <td style="white-space: nowrap; ${!isLunas && isLewatTempo(t.jatuh_tempo) ? 'color: #ff8a80; font-weight: bold;' : ''}">
+                        🗓️ ${formatTglIndo(t.jatuh_tempo)}
+                        ${!isLunas && isLewatTempo(t.jatuh_tempo) ? '<br><span style="font-size:10px;">(Lewat Tempo!)</span>' : ''}
+                    </td>
+                    <td><strong>${t.supplier}</strong></td>
+                    <td>${t.keterangan}</td>
+                    <td style="font-weight: bold; color: ${isLunas ? '#85e09b' : '#ff8a80'};">Rp ${nominalRp}</td>
+                    <td><span class="badge ${badgeClass}">${t.status}</span></td>
+                    <td style="text-align: center; white-space: nowrap;">
+                        ${!isLunas ? `<button class="btn-aksi btn-bayar" onclick="bayarTagihan(${t.id}, ${nominalAngka}, '${t.supplier}', '${t.keterangan}')">💳 Bayar Lunas</button>` : ''}
+                        <button class="btn-aksi btn-hapus" onclick="hapusTagihan(${t.id})">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = html;
+        document.getElementById('total-hutang-angka').innerText = "Rp " + totalBelumLunas.toLocaleString('id-ID');
+    }
+
+    async function tambahTagihan(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnTambah');
+        const tempo = document.getElementById('inputTempo').value;
+        const supplier = document.getElementById('inputSupplier').value.trim();
+        const keterangan = document.getElementById('inputKeterangan').value.trim();
+        const nominal = parseInt(document.getElementById('inputNominal').value) || 0;
+
+        const d = new Date();
+        const tglInput = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+
+        btn.innerText = "Menyimpan... ⏳";
+        btn.disabled = true;
+
+        try {
+            const { error } = await dbKlien.from('tagihan_invoice').insert([{
+                tanggal_input: tglInput,
+                jatuh_tempo: tempo,
+                supplier: supplier,
+                keterangan: keterangan,
+                nominal: nominal,
+                status: 'Belum Lunas'
+            }]);
+
+            if (error) throw error;
+
+            document.getElementById('inputSupplier').value = "";
+            document.getElementById('inputKeterangan').value = "";
+            document.getElementById('inputNominal').value = "";
+            muatDataTagihan();
+
+        } catch (e) {
+            alert("Gagal menambah tagihan: " + e.message);
+        } finally {
+            btn.innerText = "💾 Simpan Tagihan";
+            btn.disabled = false;
+        }
+    }
+
+    // 🚀 FITUR SAKTI: BAYAR TAGIHAN & OTOMATIS MASUK PENGELUARAN
+    async function bayarTagihan(id, nominal, supplier, keterangan) {
+        if (!confirm(`Tandai LUNAS untuk tagihan Rp ${nominal.toLocaleString('id-ID')} ke ${supplier}?\n\n(Sistem akan otomatis mencatatnya ke Dashboard Laporan Pengeluaran Harian)`)) return;
+
+        try {
+            // 1. Dapatkan tanggal hari ini format DD/MM/YYYY untuk tabel pengeluaran
+            const d = new Date();
+            const tglHariIni = d.getDate().toString().padStart(2, '0') + '/' + 
+                               (d.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                               d.getFullYear();
+
+            // 2. Tandai Lunas di tabel tagihan_invoice
+            const { error: errUpdate } = await dbKlien
+                .from('tagihan_invoice')
+                .update({ status: 'Lunas' })
+                .eq('id', id);
+            
+            if (errUpdate) throw errUpdate;
+
+            // 3. Masukkan otomatis ke tabel pengeluaran
+            const { error: errInsert } = await dbKlien.from('pengeluaran').insert([{
+                tanggal: tglHariIni,
+                kategori: "Tagihan Hutang Usaha",
+                keterangan: `Pelunasan Invoice: ${supplier} (${keterangan})`,
+                jumlah: nominal
+            }]);
+
+            if (errInsert) throw errInsert;
+
+            alert("✅ Pembayaran berhasil! Data otomatis tercatat di Laporan Pengeluaran.");
+            muatDataTagihan();
+
+        } catch (e) {
+            alert("Terjadi kesalahan sistem: " + e.message);
+        }
+    }
+
+    async function hapusTagihan(id) {
+        if (!confirm("⚠️ Yakin ingin menghapus catatan tagihan ini?")) return;
+        try {
+            await dbKlien.from('tagihan_invoice').delete().eq('id', id);
+            muatDataTagihan();
+        } catch (e) { alert("Gagal menghapus."); }
+    }
+
+    // Fungsi utilitas format tanggal
+    function formatTglIndo(tglStr) {
+        if (!tglStr) return "-";
+        const p = tglStr.split('-');
+        return `${p[2]}/${p[1]}/${p[0]}`;
+    }
+    
+    function isLewatTempo(tglStr) {
+        if (!tglStr) return false;
+        const target = new Date(tglStr);
+        target.setHours(23,59,59,999);
+        return new Date() > target;
+    }
+
+    window.onload = function() {
+        document.getElementById('inputTempo').valueAsDate = new Date();
+        muatDataTagihan();
+    };
+</script>
+</body>
+</html>
